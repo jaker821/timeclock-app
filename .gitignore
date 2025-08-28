@@ -1,0 +1,13 @@
+# Ignore Python cache
+__pycache__/
+*.pyc 
+
+# Ignore venv folder
+venv/
+
+# Ignore SQLite database files
+*.db 
+
+# Ignore system/IDE files
+.DS_Store
+.vscode/ 
