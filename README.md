@@ -38,3 +38,37 @@ timeclock-app/
 |---|requirements.txt   # Dependecies
 |---|.gitignore
 |---|README.md
+```
+
+
+---
+
+
+### Clone the repository
+```plaintext
+git clone https://github.com/jaker821/timeclock-app/tree/main
+cd timeclock-app
+```
+
+### Create and activate a virtual environment
+```plaintext
+python -m venv venv
+venv\Scripts\activate
+```
+
+### Install dependencies
+```plaintext
+pip install -r requirements.txt
+```
+
+### Run the app
+```plaintext
+python timeclock.py
+```
+
+
+---
+
+
+# Author
+**Jacob Reilly**
