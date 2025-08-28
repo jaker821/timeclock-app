@@ -30,10 +30,37 @@ A desktop based application used to track employees hours with a simple "clock i
 
 
 ## Project Structure
+```plaintext
 timeclock-app/
-|---|timeclock.py       # Main Application
-|---|db/                # Database Files
-    |---|timeclock.db
-|---|requirements.txt   # Dependecies
-|---|.gitignore
-|---|README.md
+├── timeclock.py        # Main application
+├── validators.py       # Input sanitization functions
+├── db/                 # Database files
+│   └── timeclock.db
+├── requirements.txt    # Dependencies
+├── .gitignore
+└── README.md
+```
+
+---
+
+
+### Clone the repository
+git clone https://github.com/jaker821/timeclock-app
+cd timeclock-app
+
+### Create and activate a virtual environment
+python -m venv venv
+ven\Scripts\activate
+
+### Install Dependencies
+pip install -r requirements.txt
+
+### Run the app
+python timeclock.py
+
+
+---
+
+
+# Author
+Built by **Jacob Reilly**
