@@ -31,9 +31,15 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ## Project Structure
 timeclock-app/
+
 |---|timeclock.py       # Main Application
+
 |---|db/                # Database Files
+
     |---|timeclock.db
+    
 |---|requirements.txt   # Dependecies
+
 |---|.gitignore
+
 |---|README.md
