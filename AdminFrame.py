@@ -8,12 +8,14 @@ class AdminFrame(tk.Frame):
         # Image
         self.img = tk.PhotoImage(file = "resources/logo.png")
         self.img_small = self.img.subsample(2, 2)
-        tk.Label(self, image=self.img_small).pack(pady = 20)
+        tk.Label(self, image=self.img_small).pack(pady = 10)
+
+        # Admin Frame Title
+        tk.Label(self, text = "Admin Frame", font=("Helvetica", 24, "bold")).pack(pady = 10)
 
         # Buttons
-        tk.Label(self, text = "Admin Frame").pack(pady = 20)
-        tk.Button(self, text = "Manage Users", command = self.manage_users).pack(pady = 10)
-        tk.Button(self, text = "Logout", command = self.logout).pack()
+        tk.Button(self, text = "Manage Users", font=("Helvetica", 14), command = self.manage_users).pack(pady = 10)
+        tk.Button(self, text = "Logout", command = self.logout).pack(pady = 20)
 
     def manage_users(self):
         self.pack_forget()

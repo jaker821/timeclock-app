@@ -40,14 +40,17 @@ class ManageUsersFrame(tk.Frame):
             cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
             row = cursor.fetchone()
             
-            if row:
-                tk.messagebox.showerror("User already exists", "Username ${username} already exists. Please choose a different username.")
+            if username == "" or pin == "":
+                tk.messagebox.showerror("Missing Fields", "Please fill in all fields.")
+                return
+            elif row:
+                tk.messagebox.showerror("User already exists", f"Username {username} already exists. Please choose a different username.")
                 self.clear_fields()
                 return
             else:
                 cursor.execute("INSERT INTO users (username, PIN, role) VALUES (?, ?, ?)", (username, pin, "employee"))
                 self.clear_fields()
-                tk.messagebox.showerror("User Created", "Username: ${username} Pine: ${pin}")
+                tk.messagebox.showinfo("User Created", f"Username: {username} Pin: {pin}")
                 
 
 
