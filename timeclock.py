@@ -1,6 +1,7 @@
 import tkinter as tk
 import sqlite3
 from datetime import datetime
+from TimeClockApp import TimeClockApp
 
 
 def db_connect():
@@ -31,25 +32,14 @@ def db_connect():
 
     return conn, cursor
 
-
-
 def main():
+    # Initialize Database
     conn, cursor = db_connect()
 
-    root = tk.Tk()
-    root.title("Timeclock App")
-    root.geometry("400x300")
+    # Initialize GUI and Login Screen
+    app = TimeClockApp()
 
-    label = tk.Label(root, text="Time Clock Application")
-    label.pack()
-
-    clock_in_btn = tk.Button(root, text="Clock In", command=clock_in)
-    clock_in_btn.pack(padx=10, pady=10)
-    
-    clock_out_btn = tk.Button(root, text="Clock Out", command=clock_out)
-    clock_out_btn.pack(padx=10, pady=10)
-
-    root.mainloop()
+    app.mainloop()
 
 
 
