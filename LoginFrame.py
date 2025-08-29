@@ -16,20 +16,20 @@ class LoginFrame(tk.Frame):
         form_frm.pack()
 
         # Title
-        tk.Label(form_frm, text = "Login").grid(row=1, column=1, columnspan=3, pady=10)
+        tk.Label(form_frm, text = "Login", font=("Helvetica", 16, "bold")).grid(row=1, column=1, columnspan=3, pady=5)
 
         # Username
-        tk.Label(form_frm, text = "Username").grid(row=2, column=1, padx=10, pady=5, sticky = "e")
+        tk.Label(form_frm, text = "Username", font=("Helvetica", 12)).grid(row=2, column=1, padx=10, pady=5, sticky = "e")
         self.username_entry = tk.Entry(form_frm)
         self.username_entry.grid(row=2, column=2, padx=5, pady=5)
 
         # PIN
-        tk.Label(form_frm, text = "PIN").grid(row=3, column=1, padx=10, pady=5, sticky = "e")
+        tk.Label(form_frm, text = "PIN", font=("Helvetica", 12)).grid(row=3, column=1, padx=10, pady=5, sticky = "e")
         self.pin_entry = tk.Entry(form_frm, show = "*")
         self.pin_entry.grid(row=3, column=2, padx=10, pady=5)
 
         # Login Button
-        login_btn = tk.Button(form_frm, text = "Login", command=self.login)
+        login_btn = tk.Button(form_frm, text = "Submit", font=("Helvetica", 12), command=self.login)
         login_btn.grid(row=7, column=0, columnspan=3, pady=20)
 
     def login(self):

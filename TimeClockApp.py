@@ -8,7 +8,7 @@ class TimeClockApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Time Clock App")
-        self.geometry("400x300")
+        self.geometry("500x350")
         self.resizable(width=False, height=False)
 
         self.current_user_id = None
