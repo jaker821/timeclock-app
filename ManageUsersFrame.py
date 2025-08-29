@@ -27,8 +27,10 @@ class ManageUsersFrame(tk.Frame):
         create_btn = tk.Button(form_frm, text = "Create", command=self.create_user)
         create_btn.grid(row=7, column=0, columnspan=3, pady=20)
 
-        # Logout Button
+        # Logout and Back Button
+        tk.Button(self, text = "Back to Admin", command = self.back_page).pack()
         tk.Button(self, text = "Logout", command = self.logout).pack()
+        
 
     def create_user(self):
         username = self.username_entry.get()
@@ -61,6 +63,10 @@ class ManageUsersFrame(tk.Frame):
         self.username_entry.delete(0, tk.END)
         self.pin_entry.delete(0, tk.END)
 
+
+    def back_page(self):
+        self.pack_forget()
+        self.master.admin_frame.pack(fill = "both", expand = True)
 
     def logout(self):
         self.pack_forget()

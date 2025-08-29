@@ -3,6 +3,7 @@ from LoginFrame import LoginFrame
 from EmployeeFrame import EmployeeFrame
 from AdminFrame import AdminFrame
 from ManageUsersFrame import ManageUsersFrame
+from ViewEmployeesFrame import ViewEmployeesFrame
 
 class TimeClockApp(tk.Tk):
     def __init__(self):
@@ -17,6 +18,7 @@ class TimeClockApp(tk.Tk):
         self.emp_frame = EmployeeFrame(self)
         self.admin_frame = AdminFrame(self)
         self.manage_users_frame = ManageUsersFrame(self)
+        self.view_employees_frame = ViewEmployeesFrame(self)
 
         self.login_frame.pack(fill="both", expand=True)
         
