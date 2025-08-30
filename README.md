@@ -29,8 +29,17 @@ A desktop based application used to track employees hours with a simple "clock i
 ---
 
 # Changelog
-## v1.4
+
+## v2.0 - Hashing PINs
+- Added hashing for user pins.
+
+- Added the ability to set an admin PIN when the app is run for the first time.
+
+- Added username listing on the employee frame to make sure users are on the right account.
+
+## v1.4 - DB Tie in
 - Added feature that allows clock in and clock out and stores in the database.
+
 
 ---
 
