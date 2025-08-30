@@ -29,7 +29,8 @@ A desktop based application used to track employees hours with a simple "clock i
 ---
 
 # Changelog
-
+## v1.4
+- Added feature that allows clock in and clock out and stores in the database.
 
 ---
 
