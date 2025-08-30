@@ -3,7 +3,7 @@ import sqlite3
 import tkinter.messagebox
 import bcrypt
 
-class ManageUsersFrame(tk.Frame):
+class CreateUserFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
 
@@ -12,7 +12,7 @@ class ManageUsersFrame(tk.Frame):
         form_frm.pack()
 
         # Title
-        tk.Label(form_frm, text = "Create New User").grid(row=1, column=1, columnspan=3, pady=10)
+        tk.Label(form_frm, text = "Create New User", font=("Helvetica", 16, "bold")).grid(row=1, column=1, columnspan=3, pady=10)
 
         # Create Username Input
         tk.Label(form_frm, text = "Username").grid(row=2, column=1, padx=10, pady=5, sticky = "e")
