@@ -28,6 +28,11 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ---
 
+# Changelog
+
+
+---
+
 
 ## Project Structure
 ```plaintext
