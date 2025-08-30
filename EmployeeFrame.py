@@ -14,10 +14,15 @@ class EmployeeFrame(tk.Frame):
 
         #Clock
         self.clock_label = tk.Label(self, font=("Helvetica", 20, "italic"))
-        self.clock_label.pack(pady=10)
+        self.clock_label.pack(pady=5)
 
         # Update Clock
         self.update_clock()
+
+        # Employee Frame Title
+        self.username_var = tk.StringVar()
+        self.username_var.set("Employee: ")
+        tk.Label(self, textvariable = self.username_var, font=("Helvetica", 12, "bold")).pack(pady = 5)
 
         # Button Frame
         btn_frm = tk.Frame(self)
