@@ -28,16 +28,26 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ---
 
-# Changelog
 
-## v2.0 - Hashing PINs
+## Upcoming Fixes
+- Adding calculation of hours for employees over set date range
+- Adding EXPORT button to admin page. Export to a .csv file
+- Handling user error (forgetting to clock in, or missing days)
+
+
+---
+
+
+## Changelog
+
+### v2.0 - Hashing PINs - (Bcrypt)
 - Added hashing for user pins.
 
 - Added the ability to set an admin PIN when the app is run for the first time.
 
 - Added username listing on the employee frame to make sure users are on the right account.
 
-## v1.4 - DB Tie in
+### v1.4 - DataBase Tie in - (SQLite3)
 - Added feature that allows clock in and clock out and stores in the database.
 
 
