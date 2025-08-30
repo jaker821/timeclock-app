@@ -23,8 +23,7 @@ This guide explains the features available to administrators.
 - A list of all users will be shown in a table.  
 - The table includes:
   - **User ID**  
-  - **Username**  
-  - **Role**  
+  - **Username**   
 - ⚠️ At this stage, you **cannot edit or delete** users from this view (read-only).
 
 ---
@@ -53,7 +52,6 @@ This guide explains the features available to administrators.
 ## 📝 Notes
 - Data is stored locally in the database file: **timeclock.db**.  
 - Make regular backups of this file to ensure no data is lost.  
-- Users’ PINs are currently stored in plain text. A future update will add **PIN hashing** for better security.
 
 ---
 
