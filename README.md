@@ -30,10 +30,11 @@ A desktop based application used to track employees hours with a simple "clock i
 
 
 ## Upcoming Fixes
-- Adding calculation of hours for employees over set date range
-- Adding EXPORT button to admin page. Export to a .csv file
-- Handling user error (forgetting to clock in, or missing days)
-
+1. Adding calculation of hours for employees over set date range
+2. Adding EXPORT button to admin page. Export to a .csv file
+3. Handling user error (forgetting to clock in, or missing days)
+4. Feature for admin to update PINS for users
+   
 
 ---
 
