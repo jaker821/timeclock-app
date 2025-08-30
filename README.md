@@ -42,12 +42,21 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ## Changelog
 
+### v2.1 Menu Feature added, small UX tweaks
+- Updated help link to point to help.md file.
+
+- Tweaked button placement, sizes, and labels for better UX. Updated title font sizes for better visibility.
+
+- Improved Enter key handling for login.
+
+
 ### v2.0 - Hashing PINs - (Bcrypt)
 - Added hashing for user pins.
 
 - Added the ability to set an admin PIN when the app is run for the first time.
 
 - Added username listing on the employee frame to make sure users are on the right account.
+
 
 ### v1.4 - DataBase Tie in - (SQLite3)
 - Added feature that allows clock in and clock out and stores in the database.
