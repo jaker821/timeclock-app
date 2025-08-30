@@ -13,6 +13,7 @@ class TimeClockApp(tk.Tk):
         self.resizable(width=False, height=False)
 
         self.current_user_id = None
+        self.current_username = None
 
         self.login_frame = LoginFrame(self)
         self.emp_frame = EmployeeFrame(self)

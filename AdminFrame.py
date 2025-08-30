@@ -11,11 +11,20 @@ class AdminFrame(tk.Frame):
         tk.Label(self, image=self.img_small).pack(pady = 10)
 
         # Admin Frame Title
-        tk.Label(self, text = "Admin Frame", font=("Helvetica", 24, "bold")).pack(pady = 10)
+        tk.Label(self, text = "Admin", font=("Helvetica", 24, "bold")).pack(pady = 10)
 
-        # Buttons
-        tk.Button(self, text = "Manage Employees", font=("Helvetica", 14), command = self.manage_users).pack(pady = 5)
-        tk.Button(self, text = "View Employees", font = ("Helvetica", 14), command = self.view_employees).pack(pady = 5)
+        # Employee Button Frame
+        btn_frm = tk.Frame(self)
+        btn_frm.pack(pady=10)
+
+        # Employee Buttons
+        tk.Button(btn_frm, text = "Manage Employees", font=("Helvetica", 14), command = self.manage_users).grid(row = 0, column = 0, padx = 5)
+        tk.Button(btn_frm, text = "View Employees", font = ("Helvetica", 14), command = self.view_employees).grid(row = 0, column = 1, padx = 5)
+
+        # Employee Time Button
+        tk.Button(self, text = "View Employee Time Logs", font=("Helvetica", 14), command = lambda: print("View Employee Time Logs")).pack(pady = 10)
+
+        # Logout Button
         tk.Button(self, text = "Logout", command = self.logout).pack(pady = 10)
 
     def manage_users(self):

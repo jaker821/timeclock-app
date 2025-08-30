@@ -1,6 +1,7 @@
 import tkinter as tk
 import sqlite3
 import tkinter.messagebox
+import bcrypt
 
 class ManageUsersFrame(tk.Frame):
     def __init__(self, master):
@@ -36,6 +37,8 @@ class ManageUsersFrame(tk.Frame):
         username = self.username_entry.get()
         pin = self.pin_entry.get()
 
+        hashed_pin = bcrypt.hashpw(pin.encode('utf-8'), bcrypt.gensalt())
+
         with sqlite3.connect('timeclock.db') as conn:
             
             cursor = conn.cursor()
@@ -50,7 +53,7 @@ class ManageUsersFrame(tk.Frame):
                 self.clear_fields()
                 return
             else:
-                cursor.execute("INSERT INTO users (username, PIN, role) VALUES (?, ?, ?)", (username, pin, "employee"))
+                cursor.execute("INSERT INTO users (username, PIN, role) VALUES (?, ?, ?)", (username, hashed_pin, "employee"))
                 self.clear_fields()
                 tk.messagebox.showinfo("User Created", f"Username: {username} Pin: {pin}")
                 
