@@ -12,7 +12,7 @@ class CreateUserFrame(tk.Frame):
         form_frm.pack()
 
         # Title
-        tk.Label(form_frm, text = "Create New User", font=("Helvetica", 16, "bold")).grid(row=1, column=1, columnspan=3, pady=10)
+        tk.Label(form_frm, text = "Create New User", font=("Helvetica", 20, "bold")).grid(row=1, column=1, columnspan=3, pady=10)
 
         # Create Username Input
         tk.Label(form_frm, text = "Username").grid(row=2, column=1, padx=10, pady=5, sticky = "e")
@@ -25,12 +25,12 @@ class CreateUserFrame(tk.Frame):
         self.pin_entry.grid(row=3, column=2, padx=10, pady=5)
 
         # Create User Button
-        create_btn = tk.Button(form_frm, text = "Create", command=self.create_user)
+        create_btn = tk.Button(form_frm, text = "Create", font=("Helvetica", 14), command=self.create_user)
         create_btn.grid(row=7, column=0, columnspan=3, pady=20)
 
         # Logout and Back Button
-        tk.Button(self, text = "Back to Admin", command = self.back_page).pack()
-        tk.Button(self, text = "Logout", command = self.logout).pack()
+        tk.Button(self, text = "Back to Admin", font=("Helvetica", 12), command = self.back_page).pack()
+        tk.Button(self, text = "Logout", font=("Helvetica", 8), command = self.logout).pack(pady=5)
         
 
     def create_user(self):
@@ -74,4 +74,5 @@ class CreateUserFrame(tk.Frame):
     def logout(self):
         self.pack_forget()
         self.master.login_frame.clear_fields()
+        self.master.login_frame.hide_menu()
         self.master.login_frame.pack(fill = "both", expand = True)
