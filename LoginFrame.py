@@ -43,10 +43,6 @@ class LoginFrame(tk.Frame):
             cursor.execute("SELECT id, role FROM users WHERE username = ? AND PIN = ?", (username, pin))
             row = cursor.fetchone()
 
-            # Checking id and role, DEBUGGING STATEMENT
-            print(row)
-
-
             # CHECK if the row exists
             if row:
                 # Assign user_id and role
