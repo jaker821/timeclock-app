@@ -21,7 +21,7 @@ class EmployeeFrame(tk.Frame):
 
         # Employee Frame Title
         self.username_var = tk.StringVar()
-        self.username_var.set("Employee: ")
+        self.username_var.set("Employee Username: ")
         tk.Label(self, textvariable = self.username_var, font=("Helvetica", 12, "bold")).pack(pady = 5)
 
         # Button Frame
@@ -96,4 +96,5 @@ class EmployeeFrame(tk.Frame):
     def logout(self):
         self.pack_forget()
         self.master.login_frame.clear_fields()
+        self.master.login_frame.hide_menu()
         self.master.login_frame.pack(fill = "both", expand = True)
