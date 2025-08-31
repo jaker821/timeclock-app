@@ -34,7 +34,8 @@ A desktop based application used to track employees hours with a simple "clock i
 2. Adding EXPORT button to admin page. Export to a .csv file
 3. Handling user error (forgetting to clock in, or missing days)
 4. Feature for admin to update PINS for users
-5. Add a FILE and HELP dropdown
+5. ADMIN can reset PIN
+
    
 
 ---

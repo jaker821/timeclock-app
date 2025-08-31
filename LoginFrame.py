@@ -72,11 +72,13 @@ class LoginFrame(tk.Frame):
                 # If credentials are valid, switch to EmployeeFrame
                 if role == "admin":
                     self.master.current_user_id = user_id
+                    self.master.current_window = "admin_frame"
                     self.pack_forget()
                     self.master.admin_frame.pack(fill = "both", expand = True)
                     self.show_menu()
                 elif role == "employee":
                     self.master.current_user_id = user_id
+                    self.master.current_window = "emp_frame"
                     self.master.current_username = username
                     self.master.emp_frame.username_var.set(f"Employee: {self.master.current_username}")
                     self.pack_forget()
@@ -97,8 +99,8 @@ class LoginFrame(tk.Frame):
         menu.add_cascade(label="Help", menu=help_menu)
 
         # Add commands to the File menu
-        file_menu.add_command(label="Add Employee", command=self.master.admin_frame.create_user)
-        file_menu.add_command(label="View Employees", command=self.master.admin_frame.view_employees)
+        file_menu.add_command(label="Add Employee", command = lambda: self.open_window(self.master.current_window, "create_user_frame"))
+        file_menu.add_command(label="View Employees", command = lambda: self.open_window(self.master.current_window, "view_employees_frame"))
         file_menu.add_separator()
         file_menu.add_command(label="Logout", command=self.master.admin_frame.logout)
         file_menu.add_command(label="Exit", command=self.master.quit)
@@ -107,8 +109,31 @@ class LoginFrame(tk.Frame):
         help_menu.add_command(label="Help", command=self.open_help_site)
 
     def hide_menu(self):
-        print("Hiding menu")
         self.master.config(menu=tk.Menu(self.master))
+
+    def open_window(self, current_window, window):
+        if current_window == "admin_frame":
+            self.master.admin_frame.pack_forget()
+        elif current_window == "emp_frame":
+            self.master.emp_frame.pack_forget()
+        elif current_window == "view_employees_frame":
+            self.master.view_employees_frame.pack_forget()
+        elif current_window == "create_user_frame":
+            self.master.create_user_frame.pack_forget()
+            print("test")
+
+        if window == "admin_frame":
+            self.master.admin_frame.pack(fill = "both", expand = True)
+            self.master.current_window = "admin_frame"
+        elif window == "emp_frame":
+            self.master.emp_frame.pack(fill = "both", expand = True)
+            self.master.current_window = "emp_frame"
+        elif window == "view_employees_frame":
+            self.master.view_employees_frame.pack(fill = "both", expand = True)
+            self.master.current_window = "view_employees_frame"
+        elif window == "create_user_frame":
+            self.master.create_user_frame.pack(fill = "both", expand = True)
+            self.master.current_window = "create_user_frame"
 
     def open_help_site(self):
         webbrowser.open("https://github.com/jaker821/timeclock-app/blob/main/help.md")
