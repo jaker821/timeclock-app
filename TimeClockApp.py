@@ -14,6 +14,7 @@ class TimeClockApp(tk.Tk):
 
         self.current_user_id = None
         self.current_username = None
+        self.current_window = "login_frame"
 
         self.login_frame = LoginFrame(self)
         self.emp_frame = EmployeeFrame(self)

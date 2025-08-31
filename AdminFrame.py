@@ -28,10 +28,12 @@ class AdminFrame(tk.Frame):
         tk.Button(self, text = "Logout", command = self.logout).pack(pady = 30)
 
     def create_user(self):
+        self.master.current_window = "create_user_frame"
         self.pack_forget()
         self.master.create_user_frame.pack(fill = "both", expand = True)
 
     def view_employees(self):
+        self.master.current_window = "view_employees_frame"
         self.pack_forget()
         self.master.view_employees_frame.pack(fill = "both", expand = True)
         print("View Employees")

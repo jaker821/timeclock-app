@@ -56,8 +56,7 @@ class CreateUserFrame(tk.Frame):
                 cursor.execute("INSERT INTO users (username, PIN, role) VALUES (?, ?, ?)", (username, hashed_pin, "employee"))
                 self.clear_fields()
                 tk.messagebox.showinfo("User Created", f"Username: {username} Pin: {pin}")
-                
-
+                self.master.view_employees_frame.load_users()
 
             conn.commit()
 
@@ -68,6 +67,7 @@ class CreateUserFrame(tk.Frame):
 
 
     def back_page(self):
+        self.master.current_window = "admin_frame"
         self.pack_forget()
         self.master.admin_frame.pack(fill = "both", expand = True)
 
