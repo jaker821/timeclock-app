@@ -40,6 +40,9 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ## Changelog
 
+### v2.1.1 Bug Fix
+ - Resolved a bug that occured when navigating the admin frames using the menu buttons.
+
 ### v2.1 Menu Feature added, small UX tweaks
 - Updated help link to point to help.md file.
 
