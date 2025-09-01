@@ -30,15 +30,24 @@ A desktop based application used to track employees hours with a simple "clock i
 
 
 ## Upcoming Fixes
-1. Adding calculation of hours for employees over set date range
-2. Adding EXPORT button to admin page. Export to a .csv file
-3. Handling user error (forgetting to clock in, or missing days)
+
+1. Handling user error (forgetting to clock in, or missing days)
+2. Data backups
+3. Application packaged into a .exe file
+4. General UI tweaks and fixes
    
 
 ---
 
 
 ## Changelog
+
+### v2.3 Employee Time Calculated
+ - Added - Ability to calculate the employee time
+
+ - Added - Admin can now export data to a spreadsheet.
+
+ - FIXED - After creating a user in Admin view, it doesnt show up on the View Employees page unless you restart app.
 
 ### v2.1.1 Bug Fix
  - Resolved a bug that occured when navigating the admin frames using the menu buttons.

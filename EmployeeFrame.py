@@ -8,9 +8,13 @@ class EmployeeFrame(tk.Frame):
         super().__init__(master)
 
         # Image
-        self.img = tk.PhotoImage(file = "resources/logo.png")
-        self.img_small = self.img.subsample(2, 2)
-        tk.Label(self, image=self.img_small).pack(pady = 20)
+        try:
+            self.img = tk.PhotoImage(file = "resources/logo.png")
+            self.img_small = self.img.subsample(2, 2)
+            tk.Label(self, image=self.img_small).pack(pady = 10)
+        except Exception as e:
+            tk.Label(self, text = "Image not found").pack(pady = 10)
+            print(f"Error loading logo: {e}")  
 
         #Clock
         self.clock_label = tk.Label(self, font=("Helvetica", 20, "italic"))

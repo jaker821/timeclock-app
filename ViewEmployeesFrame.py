@@ -21,7 +21,7 @@ class ViewEmployeesFrame(tk.Frame):
         self.load_users()
 
         # Back Button
-        tk.Button(self, text = "Back to Admin", command = self.back_page).pack()
+        tk.Button(self, text = "Back", command = self.back_page).pack()
 
         # Bind a double-click event to the Treeview widget
         self.tree.bind("<Double-1>", self.edit_user)

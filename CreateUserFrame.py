@@ -7,12 +7,18 @@ class CreateUserFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
 
+        # Image
+        self.img = tk.PhotoImage(file = "resources/logo.png")
+        self.img_small = self.img.subsample(2, 2)
+        tk.Label(self, image=self.img_small).pack(pady = 10)
+
+
         # Form Frame
         form_frm = tk.Frame(self)
         form_frm.pack()
 
         # Title
-        tk.Label(form_frm, text = "Create New User", font=("Helvetica", 20, "bold")).grid(row=1, column=1, columnspan=3, pady=10)
+        tk.Label(form_frm, text = "Create New User", font=("Helvetica", 20, "bold")).grid(row=1, column=1, columnspan=3, pady=5)
 
         # Create Username Input
         tk.Label(form_frm, text = "Username").grid(row=2, column=1, padx=10, pady=5, sticky = "e")
@@ -29,8 +35,7 @@ class CreateUserFrame(tk.Frame):
         create_btn.grid(row=7, column=0, columnspan=3, pady=20)
 
         # Logout and Back Button
-        tk.Button(self, text = "Back to Admin", font=("Helvetica", 12), command = self.back_page).pack()
-        tk.Button(self, text = "Logout", font=("Helvetica", 8), command = self.logout).pack(pady=5)
+        tk.Button(self, text = "Back", font=("Helvetica", 12), command = self.back_page).pack()
         
 
     def create_user(self):
@@ -56,9 +61,10 @@ class CreateUserFrame(tk.Frame):
                 cursor.execute("INSERT INTO users (username, PIN, role) VALUES (?, ?, ?)", (username, hashed_pin, "employee"))
                 self.clear_fields()
                 tk.messagebox.showinfo("User Created", f"Username: {username} Pin: {pin}")
-                self.master.view_employees_frame.load_users()
+                
 
             conn.commit()
+            self.master.view_employees_frame.load_users()
 
 
     def clear_fields(self):
@@ -70,9 +76,3 @@ class CreateUserFrame(tk.Frame):
         self.master.current_window = "admin_frame"
         self.pack_forget()
         self.master.admin_frame.pack(fill = "both", expand = True)
-
-    def logout(self):
-        self.pack_forget()
-        self.master.login_frame.clear_fields()
-        self.master.login_frame.hide_menu()
-        self.master.login_frame.pack(fill = "both", expand = True)

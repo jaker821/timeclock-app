@@ -4,6 +4,8 @@ from EmployeeFrame import EmployeeFrame
 from AdminFrame import AdminFrame
 from CreateUserFrame import CreateUserFrame
 from ViewEmployeesFrame import ViewEmployeesFrame
+from ExportDataFrame import ExportDataFrame
+
 
 class TimeClockApp(tk.Tk):
     def __init__(self):
@@ -21,6 +23,7 @@ class TimeClockApp(tk.Tk):
         self.admin_frame = AdminFrame(self)
         self.create_user_frame = CreateUserFrame(self)
         self.view_employees_frame = ViewEmployeesFrame(self)
+        self.export_data_frame = ExportDataFrame(self)
 
         self.login_frame.pack(fill="both", expand=True)
         
