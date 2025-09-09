@@ -23,6 +23,7 @@ A desktop based application used to track employees hours with a simple "clock i
 - **Python 3**
 - **Tkinter** (desktop UI)
 - **SQLite3** (local database)
+- **OpenPyXL** (Exported Spreadsheet)
 - (Optional) Google Sheets API for backup and syncing data
 
 
@@ -44,6 +45,11 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ## Changelog
 
+### v2.4 Excel and Audit Table
+ - Changed - File now exports using openpyxl.
+
+ - Added - Audit table to see each day and time worked for employees.
+ 
 ### v2.3 Employee Time Calculated
  - Added - Ability to calculate the employee time
 
