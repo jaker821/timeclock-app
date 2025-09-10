@@ -45,6 +45,15 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ## Changelog
 
+### v2.5 Missing Clock Outs
+
+ - Added - If employee forgets to clock out, the app will prompt them for that date and store it in the database. As well as a flag for it being overridden
+
+ - Added - A highlighted cell feature to the audit log, that way the admin can see which dates were manually adjusted (i.e. missed clock out)
+
+ - Fixed - Issue where a missing database file would cause the app to not run.
+ 
+
 ### v2.4 Excel and Audit Table
  - Changed - File now exports using openpyxl.
 
