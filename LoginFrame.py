@@ -43,7 +43,7 @@ class LoginFrame(tk.Frame):
         login_btn.grid(row = 0, column = 1, padx=5)
 
         # Quit Button
-        quit_btn = tk.Button(btn_frm, text = "Quit", font=("Helvetica", 12), command=self.master.quit)
+        quit_btn = tk.Button(btn_frm, text = "Quit", font=("Helvetica", 12), command=self.master.safe_quit)
         quit_btn.grid(row = 0, column = 0, padx=5)
 
         # Bind Enter key to login
@@ -108,7 +108,7 @@ class LoginFrame(tk.Frame):
         file_menu.add_separator()
         file_menu.add_command(label="Export Time Logs", command = lambda: self.open_window(self.master.current_window, "export_data_frame"))
         file_menu.add_command(label="Logout", command=self.master.admin_frame.logout)
-        file_menu.add_command(label="Exit", command=self.master.quit)
+        file_menu.add_command(label="Exit", command=self.master.safe_quit)
 
         # Add commands to the Help menu
         help_menu.add_command(label="Help", command=self.open_help_site)

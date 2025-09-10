@@ -1,5 +1,8 @@
 import tkinter as tk
 import sqlite3
+from tkinter import filedialog, messagebox
+import shutil
+import os
 
 class AdminFrame(tk.Frame):
     def __init__(self, master):
@@ -25,8 +28,11 @@ class AdminFrame(tk.Frame):
         # Export Employee Time Logs Button
         tk.Button(self, text = "Export Time Logs", font=("Helvetica", 14), command = self.export_data_frame).pack(pady = 10)
 
+        # Restore Backup Button
+        tk.Button(self, text="Restore Backup", font=("Helvetica", 14), command=self.restore_backup).pack(pady=5)
+
         # Logout Button
-        tk.Button(self, text = "Logout", command = self.logout).pack(pady = 30)
+        tk.Button(self, text = "Logout", command = self.logout).pack(pady = 10)
 
     def create_user(self):
         self.master.current_window = "create_user_frame"
@@ -42,6 +48,35 @@ class AdminFrame(tk.Frame):
         self.master.current_window = "export_data_frame"
         self.pack_forget()
         self.master.export_data_frame.pack(fill = "both", expand = True)
+
+    def restore_backup(self):
+        # Ask admin to select a backup file
+        backup_file = filedialog.askopenfilename(
+            title="Select Backup to Restore",
+            filetypes=[("SQLite Database", "*.db")],
+            initialdir="backups"
+        )
+
+        if backup_file:
+            # Confirm action
+            confirm = messagebox.askyesno(
+                "Confirm Restore",
+                f"Are you sure you want to restore from:\n{os.path.basename(backup_file)}?\nThis will overwrite the current database."
+            )
+            if confirm:
+                try:
+                    # Close existing DB connection
+                    self.master.conn.close()
+                    
+                    # Copy backup over main database
+                    shutil.copy2(backup_file, "timeclock.db")
+                    
+                    # Reopen DB connection
+                    self.master.conn, self.master.cursor = self.master.initialize_database()
+                    
+                    messagebox.showinfo("Restore Complete", "Backup successfully restored.")
+                except Exception as e:
+                    messagebox.showerror("Restore Failed", f"Could not restore backup:\n{e}")
 
     def logout(self):
         self.pack_forget()

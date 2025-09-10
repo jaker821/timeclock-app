@@ -34,15 +34,19 @@ A desktop based application used to track employees hours with a simple "clock i
 
 1. Handling OverTime Calculation.
 2. Handling future time entries for employees for a set pay period.
-3. Data backups
-4. Application packaged into a .exe file
-5. General UI tweaks and fixes
+3. Application packaged into a .exe file
+4. General UI tweaks and fixes
    
 
 ---
 
 
 ## Changelog
+
+### v2.6 DB Backups
+ - Added - Backups are stored for the database whenever a user quits the program.
+
+ - Added - Admin can restore the database to a previous backup if data is lost.
 
 ### v2.5 Missing Clock Outs
 

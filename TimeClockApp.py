@@ -1,13 +1,19 @@
 import tkinter as tk
+from tkinter import messagebox
 from LoginFrame import LoginFrame
 from EmployeeFrame import EmployeeFrame
 from AdminFrame import AdminFrame
 from CreateUserFrame import CreateUserFrame
 from ViewEmployeesFrame import ViewEmployeesFrame
 from ExportDataFrame import ExportDataFrame
+
 import sqlite3
 import bcrypt
-from tkinter import messagebox
+
+import shutil
+import os
+from datetime import datetime
+import glob
 
 class TimeClockApp(tk.Tk):
     def __init__(self):
@@ -41,6 +47,8 @@ class TimeClockApp(tk.Tk):
         except Exception as e:
             messagebox.showerror("Frame Error", f"Error creating frames:\n{e}")
             self.destroy()
+
+        self.protocol("WM_DELETE_WINDOW", self.safe_quit)
 
     def initialize_database(self):
         conn = sqlite3.connect("timeclock.db")
@@ -107,3 +115,38 @@ class TimeClockApp(tk.Tk):
 
         tk.Button(top, text="Save", command=save_pin).pack(pady=20)
         self.wait_window(top)
+
+    
+    def cleanup_old_backups(self, backup_folder="backups", max_backups=500):
+        backups = glob.glob(os.path.join(backup_folder, "*.db"))
+        if len(backups) <= max_backups:
+            return  # nothing to delete
+
+        # Sort backups by creation time (oldest first)
+        backups.sort(key=os.path.getctime)
+
+        # Delete oldest files beyond the max allowed
+        for old_backup in backups[:-max_backups]:
+            try:
+                os.remove(old_backup)
+                print(f"Deleted old backup: {old_backup}")
+            except Exception as e:
+                print(f"Failed to delete {old_backup}: {e}")
+
+    def backup_database(self, db_path="timeclock.db", backup_folder="backups"):
+        os.makedirs(backup_folder, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_file = os.path.join(backup_folder, f"time_tracker_backup_{timestamp}.db")
+        try:
+            shutil.copy2(db_path, backup_file)
+            print(f"Database backup created: {backup_file}")
+            self.cleanup_old_backups(backup_folder, max_backups=500)
+        except Exception as e:
+            print(f"Error creating database backup: {e}")
+
+
+    def safe_quit(self):
+        if messagebox.askokcancel("Quit", "Are you sure you want to quit?"):
+            self.backup_database()
+            self.conn.close()
+            self.destroy()
