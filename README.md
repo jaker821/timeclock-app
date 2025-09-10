@@ -32,12 +32,11 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ## Upcoming Fixes
 
-1. Handling user error (forgetting to clock in, or missing days)
-2. Handling OverTime Calculation.
-3. Handling future time entries for employees for a set pay period.
-4. Data backups
-5. Application packaged into a .exe file
-6. General UI tweaks and fixes
+1. Handling OverTime Calculation.
+2. Handling future time entries for employees for a set pay period.
+3. Data backups
+4. Application packaged into a .exe file
+5. General UI tweaks and fixes
    
 
 ---
