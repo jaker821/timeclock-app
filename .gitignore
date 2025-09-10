@@ -11,3 +11,6 @@ venv/
 # Ignore system/IDE files
 .DS_Store
 .vscode/ 
+
+# Ignore Backups
+backups/
