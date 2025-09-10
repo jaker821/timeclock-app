@@ -1,12 +1,11 @@
 from tkinter import *
 import tkinter as tk
 import sqlite3
-from tkcalendar import Calendar, DateEntry
+from tkcalendar import DateEntry
 from datetime import datetime, timedelta
 from tkinter import messagebox, filedialog
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
-from collections import defaultdict
 from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 
 
@@ -64,52 +63,16 @@ class ExportDataFrame(tk.Frame):
         self.back_btn.grid(row=1, column=0)
 
     def handle_export(self):
-        # Get dates from DateEntry widgets as strings
         start_date = self.start_date.get_date().strftime("%Y-%m-%d")
         end_date = self.end_date.get_date().strftime("%Y-%m-%d")
-
-        # Collect logs
         audit_dict, emp_totals, date_range = self.collect_time_logs(start_date, end_date)
-
-        # Export to Excel
         self.export_to_excel(audit_dict, emp_totals, date_range)
-
-    def select_start_date(self):
-        self.open_calendar("start")
-
-    def select_end_date(self):
-        self.open_calendar("end")
-
-    def open_calendar(self, start_or_end):
-        top = Toplevel(self)
-        top.title("Select Date")
-
-        cal = Calendar(
-            top,
-            font="Arial 14",
-            selectmode="day",
-            locale="en_US",
-            year=datetime.now().year,
-            month=datetime.now().month,
-            day=datetime.now().day,
-        )
-        cal.pack(fill="both", expand=True)
-
-        def on_select():
-            if start_or_end == "start":
-                self.start_date.set_date(cal.get_date())
-            elif start_or_end == "end":
-                self.end_date.set_date(cal.get_date())
-            top.destroy()
-
-        tk.Button(top, text="OK", command=on_select).pack()
-        print(self.start_date, self.end_date)
 
     def collect_time_logs(self, start_date, end_date):
         conn = sqlite3.connect("timeclock.db")
         cursor = conn.cursor()
 
-        # Get all users (so we can pre-fill their days)
+        # Get all users (only employees)
         cursor.execute("SELECT username FROM users WHERE role = 'employee' ORDER BY id ASC")
         all_usernames = [row[0] for row in cursor.fetchall()]
 
@@ -122,12 +85,12 @@ class ExportDataFrame(tk.Frame):
         audit_dict = {username: {d: [] for d in date_range} for username in all_usernames}
         emp_totals = {username: 0 for username in all_usernames}
 
-        # Query logs (filter only on clock_in_time)
+        # Query logs including manual_override
         cursor.execute(
             """
-            SELECT u.username, t.clock_in_time, t.clock_out_time 
-            FROM time_logs t 
-            JOIN users u ON t.user_id = u.id 
+            SELECT u.username, t.clock_in_time, t.clock_out_time, t.manual_override
+            FROM time_logs t
+            JOIN users u ON t.user_id = u.id
             WHERE date(t.clock_in_time) BETWEEN ? AND ?
             AND u.role = 'employee'
             ORDER BY u.id ASC
@@ -136,15 +99,14 @@ class ExportDataFrame(tk.Frame):
         )
         data = cursor.fetchall()
 
-        for username, clock_in, clock_out in data:
-            # Parse clock in
+        for username, clock_in, clock_out, manual_override in data:
             clock_in_dt = datetime.strptime(clock_in, "%Y-%m-%dT%H:%M:%S.%f")
             day = clock_in_dt.date()
 
             # Handle missing clock out
             if clock_out is None:
                 shift_str = f"{clock_in_dt.strftime('%H:%M')}-???"
-                audit_dict[username][day].append(shift_str)
+                audit_dict[username][day].append((shift_str, manual_override))
                 continue
 
             # Normal complete shift
@@ -153,7 +115,7 @@ class ExportDataFrame(tk.Frame):
             emp_totals[username] += hours_worked
 
             shift_str = f"{clock_in_dt.strftime('%H:%M')}-{clock_out_dt.strftime('%H:%M')}"
-            audit_dict[username][day].append(shift_str)
+            audit_dict[username][day].append((shift_str, manual_override))
 
         conn.close()
         return audit_dict, emp_totals, date_range
@@ -182,29 +144,32 @@ class ExportDataFrame(tk.Frame):
             # --- Sheet 2: Audit Log ---
             ws_audit = wb.create_sheet("Audit Log")
 
-            # Header row: Username + dates
+            # Legend row
+            ws_audit.append(["Red cells = Manual Override / Adjusted Shifts"])
+            ws_audit.row_dimensions[1].height = 20
+            ws_audit.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(date_range)+1)
+            legend_cell = ws_audit.cell(row=1, column=1)
+            legend_cell.font = Font(bold=True, color="9C0006")
+            legend_cell.alignment = Alignment(horizontal="center", vertical="center")
+
+            # Header row
             header = ["Username"] + [d.strftime("%Y-%m-%d") for d in date_range]
             ws_audit.append(header)
 
             # Rows: one per user
-            for username in sorted(audit_dict.keys()):
-                row = [username]
-                for d in date_range:
-                    shifts = audit_dict[username].get(d, [])
-                    row.append("; ".join(shifts) if shifts else "")
-                ws_audit.append(row)
-
-            # Auto column widths
-            for ws in [ws_totals, ws_audit]:
-                for col in ws.columns:
-                    max_length = 0
-                    col_letter = get_column_letter(col[0].column)
-                    for cell in col:
-                        if cell.value:
-                            max_length = max(max_length, len(str(cell.value)))
-                    ws.column_dimensions[col_letter].width = max_length + 2
-
-            from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+            for row_idx, username in enumerate(sorted(audit_dict.keys()), start=3):  # start=3 because legend=1, header=2
+                ws_audit.cell(row=row_idx, column=1, value=username)
+                for col_idx, d in enumerate(date_range, start=2):
+                    # Each shift is now a tuple: (shift_str, manual_override_flag)
+                    shifts = audit_dict[username][d]  
+                    cell_text = "; ".join([s for s, _ in shifts])
+                    cell = ws_audit.cell(row=row_idx, column=col_idx, value=cell_text)
+                    
+                    # Highlight manual override
+                    if any(mo and str(mo).upper() == "Y" for _, mo in shifts):
+                        cell.fill = PatternFill(
+                            start_color="FFC7CE", end_color="FFC7CE", fill_type="solid"
+                        )
 
             # Styling helpers
             bold_font = Font(bold=True)
@@ -217,18 +182,18 @@ class ExportDataFrame(tk.Frame):
                 bottom=Side(style="thin"),
             )
 
-            # Apply to both sheets
+            # Apply styles and borders
             for ws in [ws_totals, ws_audit]:
                 # Freeze top row
                 ws.freeze_panes = "B2"
 
                 # Style headers
-                for cell in ws[1]:
+                for cell in ws[2] if ws == ws_audit else ws[1]:
                     cell.font = bold_font
                     cell.fill = header_fill
                     cell.alignment = center_align
 
-                # Apply borders and auto-width
+                # Apply borders and adjust column widths
                 for col in ws.columns:
                     col_letter = get_column_letter(col[0].column)
                     max_length = 0
@@ -238,7 +203,6 @@ class ExportDataFrame(tk.Frame):
                         # Track max width
                         if cell.value:
                             max_length = max(max_length, len(str(cell.value)))
-                    # Set width (minimum 12)
                     ws.column_dimensions[col_letter].width = max(max_length + 2, 12)
 
             wb.save(file_destination)
@@ -247,6 +211,7 @@ class ExportDataFrame(tk.Frame):
         except Exception as e:
             tk.messagebox.showerror("Error", f"Error saving file: {e}")
             print(f"Error saving file: {e}")
+
 
     def back_page(self):
         self.master.current_window = "admin_frame"
