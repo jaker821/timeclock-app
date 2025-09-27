@@ -32,7 +32,7 @@ class CreateUserFrame(tk.Frame):
 
         # Create User Button
         create_btn = tk.Button(form_frm, text = "Create", font=("Helvetica", 14), command=self.create_user)
-        create_btn.grid(row=7, column=0, columnspan=3, pady=20)
+        create_btn.grid(row=7, column=0, columnspan=3, pady=10)
 
         # Logout and Back Button
         tk.Button(self, text = "Back", font=("Helvetica", 12), command = self.back_page).pack()
