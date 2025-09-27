@@ -1,58 +1,144 @@
-# 🕒 TimeClock App - Admin Help Guide
+# Time Clock App - Help Guide
 
-Welcome to the **TimeClock App (Admin Panel)**.  
-This guide explains the features available to administrators.  
-
----
-
-## 📋 Features for Admins
-
-### 1. **Create New User**
-- Navigate to the **"Create User"** page.  
-- Enter the following:
-  - **Username** (must be unique).  
-  - **PIN** (numeric code the employee uses to log in).  
-  - **Role** (choose **employee** or **admin**).  
-- Click **"Create User"** to save them to the system.  
-- A success message will confirm the new user was added.
+Welcome to the **Time Clock App**! This guide will help you understand how to use the application, whether you are an **employee** or an **admin**.
 
 ---
 
-### 2. **View All Users**
-- Navigate to the **"View Users"** page.  
-- A list of all users will be shown in a table.  
-- The table includes:
-  - **User ID**  
-  - **Username**   
-- ⚠️ At this stage, you **cannot edit or delete** users from this view (read-only).
+## Table of Contents
+
+1. [Login](#login)
+2. [Employee Functions](#employee-functions)
+   - Clock In
+   - Clock Out
+   - Add Time Log
+   - Logout
+3. [Admin Functions](#admin-functions)
+   - Create Employees
+   - View Employees
+   - Export Time Logs
+   - Restore Database Backup
+   - Logout
+4. [Keyboard Shortcuts](#keyboard-shortcuts)
+5. [Exported Excel Files](#exported-excel-files)
+6. [Troubleshooting](#troubleshooting)
 
 ---
 
-### 3. **Clock In / Clock Out (Employees Only)**
-- Employees log in using their **username** and **PIN**.  
-- They can press **Clock In** or **Clock Out** from their dashboard.  
-- Each action is recorded in the database and will later be used for reporting.  
-- Admins do not clock in/out unless also acting as employees.
+## Login
+
+1. Open the app (`timeclock.py`).
+2. Enter your **username** and **PIN**.
+3. Press **Submit** or hit **Enter**.
+4. Depending on your role:
+   - **Admin**: Redirected to the Admin Dashboard.
+   - **Employee**: Redirected to the Employee Dashboard.
+
+**Notes:**
+- PINs are securely hashed using `bcrypt`.
+- First-time use will require you to set an **Admin PIN**.
 
 ---
 
-### 4. **Help Menu**
-- This page (Help Guide) can always be accessed from the **Help Menu**.  
-- It explains all admin functions in one place.  
+## Employee Functions
+
+### Clock In
+
+- Click **Clock In** to log your start time.
+- If you forget to clock out on a previous day, the app will prompt you to select a missing clock-out time before allowing a new clock-in.
+
+### Clock Out
+
+- Click **Clock Out** to log your end time.
+- Cannot clock out if no active clock-in exists.
+- Cannot clock out for previous days without entering missing shift times.
+
+### Add Time Log
+
+- Opens a form to manually add future or past time logs for payroll purposes.
+
+### Logout
+
+- Click **Logout** to return to the login screen.
+- Your session will end and all data will be saved automatically.
 
 ---
 
-## ⚙️ Future Features (Planned)
-- Export reports of hours worked by employees for a custom date range.  
-- Allow admin to reset or update a user’s PIN.  
-- Logging system for error/debug tracking.  
+## Admin Functions
+
+### Create Employees
+
+1. Click **Create Employees**.
+2. Fill in **Username** and **PIN**.
+3. Click **Create**.
+4. New employees are automatically saved to the database.
+5. You cannot create duplicate usernames.
+
+### View Employees
+
+- Shows a list of all employees (excluding `DEVELOPER_ADMIN`) with ID, username, and role.
+- **Double-click** a user to:
+  - Delete the user.
+  - Update their PIN.
+
+### Export Time Logs
+
+1. Click **Export Time Logs**.
+2. Select **Start Date** and **End Date**.
+3. Click **Export to Excel**.
+4. The app will generate an Excel file containing:
+   - **Totals Sheet:** Total hours worked per employee.
+   - **Audit Log Sheet:** Daily shifts, with **manual override/adjusted shifts highlighted in red**.
+
+### Restore Database Backup
+
+1. Click **Restore Backup**.
+2. Select a backup file from the `backups` folder.
+3. Confirm the restore. This **overwrites the current database**.
+
+### Logout
+
+- Click **Logout** to return to the login screen.
+- Menu bar and admin session end.
 
 ---
 
-## 📝 Notes
-- Data is stored locally in the database file: **timeclock.db**.  
-- Make regular backups of this file to ensure no data is lost.  
+## Keyboard Shortcuts
+
+- **Enter**: Submit login credentials.
+- **Double-click**: Edit a user in the View Employees frame.
 
 ---
 
-👤 **Admin Reminder:** Only admins can access the **Create User**, **View Users**, and **Help Menu** pages. Employees only see their personal dashboard.
+## Exported Excel Files
+
+- Uses `OpenPyXL` for Excel export.
+- Two sheets:
+  - **Totals:** Employee total hours.
+  - **Audit Log:** Daily clock-in and clock-out times.
+- **Red cells** indicate manual overrides (e.g., missed clock-outs).
+
+---
+
+## Troubleshooting
+
+- **App does not start:** Make sure `timeclock.db` exists or let the app create it on first run.
+- **Image not found:** The logo file `resources/logo.png` is missing. The app will still run.
+- **PIN issues:** PINs must be entered correctly; they are hashed.
+- **Database errors:** The admin can restore a previous backup.
+
+---
+
+## Additional Notes
+
+- All backups are stored in the `backups` folder.
+- Old backups are automatically cleaned to keep a maximum of 500 backups.
+- First-time setup requires an **Admin PIN**.
+- The menu bar is only available for **admin users**.
+
+---
+
+## Author
+
+**Jacob Reilly**  
+[GitHub Repository](https://github.com/jaker821/timeclock-app)
+

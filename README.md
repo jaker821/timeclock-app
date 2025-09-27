@@ -32,17 +32,20 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ## Upcoming Fixes
 
-1. Handling OverTime Calculation
-2. Lunch breaks
-3. Add enter key bindings to multiple frames
-2. Application packaged into a .exe file
-3. General UI tweaks and fixes
+1. Lunch breaks
+2. Add enter key bindings to multiple frames
+3. Application packaged into a .exe file
+4. General UI tweaks and fixes
    
 
 ---
 
 
 ## Changelog
+
+### v3.0 Overtime Calculation
+ - Added - Calculating Semi-Monthly Overtime
+ - Updated - help.md file for admin
 
 ### v2.7 Future Time Entries
  - Added - User can now add future shifts in case payroll is needed to be calculated a few days before.
