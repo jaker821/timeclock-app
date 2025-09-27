@@ -7,6 +7,7 @@ import webbrowser
 class LoginFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
+        self.bind("<Return>", self.on_enter_key)
 
         # Image
         try:
@@ -47,7 +48,8 @@ class LoginFrame(tk.Frame):
         quit_btn.grid(row = 0, column = 0, padx=5)
 
         # Bind Enter key to login
-        self.master.bind('<Return>', self.on_enter_key)
+        self.username_entry.bind("<Return>", self.on_enter_key)
+        self.pin_entry.bind("<Return>", self.on_enter_key)
 
 
     # Function to handle login

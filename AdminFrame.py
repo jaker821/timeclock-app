@@ -29,7 +29,7 @@ class AdminFrame(tk.Frame):
         tk.Button(self, text = "Export Time Logs", font=("Helvetica", 14), command = self.export_data_frame).pack(pady = 10)
 
         # Restore Backup Button
-        tk.Button(self, text="Restore Backup", font=("Helvetica", 14), command=self.restore_backup).pack(pady=5)
+        tk.Button(self, text="Restore Backup", font=("Helvetica", 10), command=self.restore_backup).pack(pady=5)
 
         # Logout Button
         tk.Button(self, text = "Logout", command = self.logout).pack(pady = 10)

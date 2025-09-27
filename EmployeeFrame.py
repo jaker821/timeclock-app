@@ -28,12 +28,13 @@ class EmployeeFrame(tk.Frame):
 
         # Button Frame
         btn_frm = tk.Frame(self)
-        btn_frm.pack(pady=10)
+        btn_frm.pack(pady=5)
 
         # Buttons
         tk.Button(btn_frm, text="Clock In", font=("Helvetica", 14), command=self.clock_in).grid(pady=5, padx=5, row=0, column=0, sticky="w")
         tk.Button(btn_frm, text="Clock Out", font=("Helvetica", 14), command=self.clock_out).grid(pady=5, padx=5, row=0, column=1, sticky="e")
-        tk.Button(btn_frm, text="Logout", font=("Helvetica", 14), command=self.logout).grid(pady=5, row=1, column=0, columnspan=2)
+        tk.Button(btn_frm, text="Add Time Log", font=("Helvetica", 14), command=self.add_time_log).grid(pady=5, row=1, column=0, columnspan=2)
+        tk.Button(btn_frm, text="Logout", font=("Helvetica", 10), command=self.logout).grid(pady=5, row=2, column=0, columnspan=2)
 
     # --- Clock Update ---
     def update_clock(self):
@@ -149,6 +150,15 @@ class EmployeeFrame(tk.Frame):
             )
             conn.commit()
         print("Clocked Out", current_time)
+
+
+    # --- Open Add Time Log Modal ---
+    def add_time_log(self):
+        self.pack_forget()
+        self.master.login_frame.clear_fields()
+        self.master.login_frame.hide_menu()
+        self.master.add_time_log.pack(fill="both", expand=True)
+
 
     # --- Logout ---
     def logout(self):
