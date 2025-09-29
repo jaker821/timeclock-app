@@ -75,108 +75,102 @@ class ExportDataFrame(tk.Frame):
         self.export_to_excel(audit_dict, emp_totals, date_range)
 
     def collect_time_logs(self, start_date, end_date):
-        """
-        Retrieve time logs from the database and calculate totals and overtime.
-
-        Parameters:
-        - start_date (str): Start date of export range ("YYYY-MM-DD").
-        - end_date (str): End date of export range ("YYYY-MM-DD").
-
-        Returns:
-        - audit_dict: Dictionary mapping username -> date -> list of shifts (shift_str, manual_override, is_ot)
-        - emp_totals: Dictionary mapping username -> {'regular': float, 'overtime': float}
-        - date_range: List of datetime.date objects in the selected range.
-        """
-        import dateutil.parser as dp  # parse ISO strings from database
+        import dateutil.parser as dp
 
         conn = sqlite3.connect("timeclock.db")
         cursor = conn.cursor()
 
         # Get all employees
-        cursor.execute("SELECT username FROM users WHERE role='employee' ORDER BY id ASC")
-        all_usernames = [row[0] for row in cursor.fetchall()]
+        cursor.execute("SELECT username, id FROM users WHERE role='employee' ORDER BY id ASC")
+        all_users = cursor.fetchall()
+        all_usernames = [u[0] for u in all_users]
+        user_ids = {u[0]: u[1] for u in all_users}
 
-        # Convert start/end to date objects
         start_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
         end_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
         date_range = [start_dt + timedelta(days=i) for i in range((end_dt - start_dt).days + 1)]
 
-        # Initialize audit dict (shifts per day) and employee totals
         audit_dict = {u: {d: [] for d in date_range} for u in all_usernames}
         emp_totals = {u: {'regular': 0.0, 'overtime': 0.0} for u in all_usernames}
 
-        # Extend query range to cover full weeks intersecting selection (Sunday-Saturday)
+        # Extend to cover full weeks for OT calculation
         first_sunday = start_dt - timedelta(days=start_dt.weekday() + 1 if start_dt.weekday() < 6 else 0)
         last_saturday = end_dt + timedelta(days=(5 - end_dt.weekday()) if end_dt.weekday() < 6 else 0)
 
-        # Fetch all logs in the extended range
+        # Fetch all time logs for extended range
         cursor.execute("""
-            SELECT u.username, t.clock_in_time, t.clock_out_time, t.manual_override
-            FROM time_logs t
-            JOIN users u ON t.user_id = u.id
-            WHERE date(t.clock_in_time) BETWEEN ? AND ?
-            AND u.role='employee'
-            ORDER BY u.id ASC
+            SELECT id, user_id, clock_in_time, clock_out_time, manual_override
+            FROM time_logs
+            WHERE date(clock_in_time) BETWEEN ? AND ?
+            ORDER BY user_id ASC
         """, (first_sunday.strftime("%Y-%m-%d"), last_saturday.strftime("%Y-%m-%d")))
-
         data = cursor.fetchall()
 
-        # Store shifts for weekly OT calculation
+        # Store shifts per user for weekly OT
         weekly_shifts = {u: [] for u in all_usernames}
 
-        for username, clock_in, clock_out, manual_override in data:
+        for time_log_id, user_id, clock_in, clock_out, mo in data:
+            username = [u for u, uid in user_ids.items() if uid == user_id][0]
             clock_in_dt = dp.parse(clock_in)
             day = clock_in_dt.date()
 
             if clock_out is None:
-                # If no clock-out, mark as incomplete shift
                 shift_str = f"{clock_in_dt.strftime('%H:%M')}-???"
                 if day in audit_dict[username]:
-                    audit_dict[username][day].append((shift_str, manual_override, False))
+                    audit_dict[username][day].append((shift_str, mo, False))
                 continue
 
             clock_out_dt = dp.parse(clock_out)
+
+            # Raw hours
             hours_worked = (clock_out_dt - clock_in_dt).total_seconds() / 3600
+
+            # Subtract lunch breaks
+            cursor.execute("SELECT SUM(duration_minutes) FROM lunch_breaks WHERE time_log_id = ?", (time_log_id,))
+            result = cursor.fetchone()
+            lunch_minutes = result[0] or 0
+            hours_worked -= lunch_minutes / 60
+            hours_worked = max(0, hours_worked)
+
+            # Format shift string for audit (show lunch if exists)
             shift_str = f"{clock_in_dt.strftime('%H:%M')}-{clock_out_dt.strftime('%H:%M')}"
-
-            # Store shift for OT calculation (weekly)
-            weekly_shifts[username].append(
-                (day, hours_worked, manual_override, clock_in_dt.strftime('%H:%M'), clock_out_dt.strftime('%H:%M'))
-            )
-
-            # Temporarily store in audit_dict if in selected range
+            lunch_text = f"{lunch_minutes/60:.2f} Lunch" if lunch_minutes > 0 else ""
             if day in audit_dict[username]:
-                audit_dict[username][day].append((shift_str, manual_override, False))
+                cell_display = shift_str
+                if lunch_text:
+                    cell_display += f"; {lunch_text}"
+                audit_dict[username][day].append((cell_display, mo, False))
 
-        # --- Calculate overtime per week ---
+            # Store for weekly OT calculation
+            weekly_shifts[username].append((day, hours_worked, mo, shift_str))
+
+        # --- Weekly OT calculation ---
         for username in all_usernames:
             # Group shifts by week (Sunday start)
             weeks = {}
-            for day, hours, mo, start_str, end_str in weekly_shifts[username]:
+            for day, hours, mo, shift_str in weekly_shifts[username]:
                 week_start = day - timedelta(days=day.weekday() + 1 if day.weekday() < 6 else 0)
-                weeks.setdefault(week_start, []).append((day, hours, mo, start_str, end_str))
+                weeks.setdefault(week_start, []).append((day, hours, mo, shift_str))
 
-            # Compute weekly OT
             for week_start, week_shifts in weeks.items():
-                cumulative = 0.0
-                for day, hours, mo, start_str, end_str in week_shifts:
-                    cumulative += hours
-                    ot_hours = max(0.0, cumulative - 40)  # anything over 40h/week is OT
-                    reg_hours = hours - ot_hours if ot_hours > 0 else hours
+                total_week_hours = sum(h for _, h, _, _ in week_shifts)
+                cumulative_hours = 0.0
 
-                    # Update OT flag in audit_dict
-                    if day in audit_dict[username]:
-                        for idx, (s, mo_flag, _) in enumerate(audit_dict[username][day]):
-                            if s == f"{start_str}-{end_str}":
-                                audit_dict[username][day][idx] = (s, mo_flag, ot_hours > 0)
-
-                    # Only count hours in selected date range
+                for day, hours, mo, shift_str in week_shifts:
+                    reg_hours = hours
+                    ot_hours = 0.0
                     if start_dt <= day <= end_dt:
+                        ot_hours = min(max(0.0, cumulative_hours + hours - 40.0), hours) if total_week_hours > 40 else 0.0
+                        reg_hours = hours - ot_hours
+
                         emp_totals[username]['regular'] += reg_hours
                         emp_totals[username]['overtime'] += ot_hours
 
+                    cumulative_hours += hours
+
         conn.close()
         return audit_dict, emp_totals, date_range
+
 
 
     def export_to_excel(self, audit_dict, emp_totals, date_range):

@@ -40,11 +40,11 @@ class LoginFrame(tk.Frame):
         btn_frm.pack(pady=20)
 
         # Login Button
-        login_btn = tk.Button(btn_frm, text = "Submit", font=("Helvetica", 12), command=self.login)
+        login_btn = tk.Button(btn_frm, text = "Submit", font=("Helvetica", 14), command=self.login)
         login_btn.grid(row = 0, column = 1, padx=5)
 
         # Quit Button
-        quit_btn = tk.Button(btn_frm, text = "Quit", font=("Helvetica", 12), command=self.master.safe_quit)
+        quit_btn = tk.Button(btn_frm, text = "Quit", font=("Helvetica", 14), command=self.master.safe_quit)
         quit_btn.grid(row = 0, column = 0, padx=5)
 
         # Bind Enter key to login

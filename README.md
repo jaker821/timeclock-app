@@ -32,16 +32,20 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ## Upcoming Fixes
 
-1. Lunch breaks
-2. Add enter key bindings to multiple frames
-3. Application packaged into a .exe file
-4. General UI tweaks and fixes
+1. Add enter key bindings to multiple frames
+2. Application packaged into a .exe file
    
 
 ---
 
 
 ## Changelog
+
+### v3.1 Lunch breaks
+ - Added - Employees can now log lunch breaks, automatically subtracts from total hours. And displays in audit table.
+ - Updated help.md to reflect lunch break feature
+ - Tweaked - Small UI fixes to button sizing
+ - Fixed - OT calculation (works properly now)
 
 ### v3.0 Overtime Calculation
  - Added - Calculating Semi-Monthly Overtime
