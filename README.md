@@ -45,6 +45,7 @@ A desktop based application used to track employees hours with a simple "clock i
  - Added - Employees can now log lunch breaks, automatically subtracts from total hours. And displays in audit table.
  - Updated help.md to reflect lunch break feature
  - Tweaked - Small UI fixes to button sizing
+ - Fixed - OT calculation (works properly now)
 
 ### v3.0 Overtime Calculation
  - Added - Calculating Semi-Monthly Overtime
