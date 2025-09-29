@@ -10,6 +10,7 @@ Welcome to the **Time Clock App**! This guide will help you understand how to us
 2. [Employee Functions](#employee-functions)
    - Clock In
    - Clock Out
+   - Lunch Break
    - Add Time Log
    - Logout
 3. [Admin Functions](#admin-functions)
@@ -52,6 +53,14 @@ Welcome to the **Time Clock App**! This guide will help you understand how to us
 - Cannot clock out if no active clock-in exists.
 - Cannot clock out for previous days without entering missing shift times.
 
+### Lunch Break
+
+- Click **Lunch Break** to log a break during your shift.
+- A dropdown menu will appear allowing you to select the break duration: 10, 15, 20, 25, or 30 minutes.
+- You can add multiple lunch breaks for a single shift if needed.
+- Breaks are subtracted automatically from your total worked hours for accurate payroll and overtime calculation.
+- Must be clocked in to log a lunch break.
+
 ### Add Time Log
 
 - Opens a form to manually add future or past time logs for payroll purposes.
@@ -87,7 +96,7 @@ Welcome to the **Time Clock App**! This guide will help you understand how to us
 3. Click **Export to Excel**.
 4. The app will generate an Excel file containing:
    - **Totals Sheet:** Total hours worked per employee.
-   - **Audit Log Sheet:** Daily shifts, with **manual override/adjusted shifts highlighted in red**.
+   - **Audit Log Sheet:** Daily shifts, with **manual override/adjusted shifts highlighted in red** and **lunch breaks shown as `X Lunch break`**.
 
 ### Restore Database Backup
 
@@ -99,6 +108,14 @@ Welcome to the **Time Clock App**! This guide will help you understand how to us
 
 - Click **Logout** to return to the login screen.
 - Menu bar and admin session end.
+
+---
+
+## Admin Notes on Lunch Breaks
+
+- Lunch breaks are recorded per employee per shift.
+- Breaks are automatically subtracted from the shift hours when exporting time logs, ensuring overtime is calculated correctly.
+- In the **Audit Log** sheet of the exported Excel file, lunch breaks are displayed as `X Lunch break`, where `X` is the total minutes of the break.
 
 ---
 
@@ -141,4 +158,3 @@ Welcome to the **Time Clock App**! This guide will help you understand how to us
 
 **Jacob Reilly**  
 [GitHub Repository](https://github.com/jaker821/timeclock-app)
-

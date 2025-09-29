@@ -76,6 +76,16 @@ class TimeClockApp(tk.Tk):
             )
         """)
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS lunch_breaks(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                time_log_id INTEGER NOT NULL,
+                duration_minutes INTEGER NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(time_log_id) REFERENCES time_logs(id)
+            )
+        """)
+
         # Check for admin user
         cursor.execute("SELECT * FROM users WHERE username='admin'")
         row = cursor.fetchone()

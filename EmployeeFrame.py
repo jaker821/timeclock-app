@@ -23,8 +23,6 @@ class EmployeeFrame(tk.Frame):
 
         # Employee Frame Title
         self.username_var = tk.StringVar()
-        self.username_var.set("Employee Username: ")
-        tk.Label(self, textvariable=self.username_var, font=("Helvetica", 12, "bold")).pack(pady=5)
 
         # Button Frame
         btn_frm = tk.Frame(self)
@@ -33,8 +31,12 @@ class EmployeeFrame(tk.Frame):
         # Buttons
         tk.Button(btn_frm, text="Clock In", font=("Helvetica", 14), command=self.clock_in).grid(pady=5, padx=5, row=0, column=0, sticky="w")
         tk.Button(btn_frm, text="Clock Out", font=("Helvetica", 14), command=self.clock_out).grid(pady=5, padx=5, row=0, column=1, sticky="e")
-        tk.Button(btn_frm, text="Add Time Log", font=("Helvetica", 14), command=self.add_time_log).grid(pady=5, row=1, column=0, columnspan=2)
-        tk.Button(btn_frm, text="Logout", font=("Helvetica", 10), command=self.logout).grid(pady=5, row=2, column=0, columnspan=2)
+
+        # Lunch Break Dropdown
+        tk.Button(btn_frm, text="Lunch Break", font=("Helvetica", 14), command=self.lunch_break).grid(row=0, column=2, padx=5, pady=5)
+
+        tk.Button(btn_frm, text="Add Time Log", font=("Helvetica", 12), command=self.add_time_log).grid(pady=10, row=2, column=0, columnspan=3)
+        tk.Button(btn_frm, text="Logout", font=("Helvetica", 10), command=self.logout).grid(pady=10, row=3, column=0, columnspan=3)
 
     # --- Clock Update ---
     def update_clock(self):
@@ -150,6 +152,42 @@ class EmployeeFrame(tk.Frame):
             )
             conn.commit()
         print("Clocked Out", current_time)
+
+    def lunch_break(self):
+        top = tk.Toplevel(self)
+        top.title("Lunch Break")
+        top.geometry("300x150")
+        top.resizable(False, False)
+
+        tk.Label(top, text="Select Lunch Break Duration:").pack(pady=10)
+
+        options = ["10", "15", "20", "25", "30"]
+        duration_var = tk.StringVar(value=options[0])
+
+        combo = ttk.Combobox(top, values=options, textvariable=duration_var, state="readonly")
+        combo.pack(pady=5)
+
+        def save_lunch_break():
+            minutes = int(duration_var.get())
+            open_shift = self.get_open_shift()
+            if not open_shift:
+                messagebox.showwarning("Warning", "You must be clocked in to log a lunch break.")
+                return
+
+            with sqlite3.connect("timeclock.db") as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO lunch_breaks (time_log_id, duration_minutes, created_at) VALUES (?, ?, ?)",
+                    (open_shift[0], minutes, datetime.now().isoformat())
+                )
+                conn.commit()
+
+            messagebox.showinfo("Success", f"Lunch break of {minutes} minutes recorded.")
+            top.destroy()
+
+        tk.Button(top, text="Save", command=save_lunch_break).pack(pady=10)
+        top.grab_set()
+        top.focus_set()
 
 
     # --- Open Add Time Log Modal ---
