@@ -8,7 +8,7 @@ from utils import get_resource_path, get_db_path  # ✅ use helpers
 class EmployeeFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
-        self.AUTO_LOGOUT_MINUTES = 5  # Auto logout after 5 minutes of inactivity
+        self.AUTO_LOGOUT_MINUTES = 1  # Auto logout after 1.5 minutes of inactivity
         self.logout_timer = None
         self.reset_auto_logout()  # start timer
         
