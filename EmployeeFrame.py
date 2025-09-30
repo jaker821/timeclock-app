@@ -2,14 +2,17 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 import sqlite3
+from utils import get_resource_path, get_db_path  # ✅ use helpers
+
 
 class EmployeeFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
 
-        # Image
+        # Image (load from AppData/resources)
         try:
-            self.img = tk.PhotoImage(file="resources/logo.png")
+            logo_path = get_resource_path("logo.png")
+            self.img = tk.PhotoImage(file=logo_path)
             self.img_small = self.img.subsample(2, 2)
             tk.Label(self, image=self.img_small).pack(pady=10)
         except Exception as e:
@@ -32,7 +35,7 @@ class EmployeeFrame(tk.Frame):
         tk.Button(btn_frm, text="Clock In", font=("Helvetica", 14), command=self.clock_in).grid(pady=5, padx=5, row=0, column=0, sticky="w")
         tk.Button(btn_frm, text="Clock Out", font=("Helvetica", 14), command=self.clock_out).grid(pady=5, padx=5, row=0, column=1, sticky="e")
 
-        # Lunch Break Dropdown
+        # Lunch Break
         tk.Button(btn_frm, text="Lunch Break", font=("Helvetica", 14), command=self.lunch_break).grid(row=0, column=2, padx=5, pady=5)
 
         tk.Button(btn_frm, text="Add Time Log", font=("Helvetica", 12), command=self.add_time_log).grid(pady=10, row=2, column=0, columnspan=3)
@@ -46,7 +49,8 @@ class EmployeeFrame(tk.Frame):
 
     # --- Database Helpers ---
     def get_open_shift(self):
-        with sqlite3.connect('timeclock.db') as conn:
+        db_path = get_db_path()  # ✅ use AppData DB
+        with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT id, clock_in_time 
@@ -91,7 +95,8 @@ class EmployeeFrame(tk.Frame):
                     messagebox.showerror("Invalid Time", "Clock out must be after clock in.")
                     return
 
-                with sqlite3.connect('timeclock.db') as conn:
+                db_path = get_db_path()
+                with sqlite3.connect(db_path) as conn:
                     cursor = conn.cursor()
                     cursor.execute(
                         "UPDATE time_logs SET clock_out_time=?, manual_override=? WHERE id=?",
@@ -122,7 +127,8 @@ class EmployeeFrame(tk.Frame):
                 return
 
         current_time = datetime.now().isoformat()
-        with sqlite3.connect('timeclock.db') as conn:
+        db_path = get_db_path()
+        with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO time_logs(user_id, clock_in_time, manual_override) VALUES(?, ?, ?)",
@@ -144,7 +150,8 @@ class EmployeeFrame(tk.Frame):
             return
 
         current_time = datetime.now().isoformat()
-        with sqlite3.connect('timeclock.db') as conn:
+        db_path = get_db_path()
+        with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "UPDATE time_logs SET clock_out_time=?, manual_override=? WHERE id=?",
@@ -153,6 +160,7 @@ class EmployeeFrame(tk.Frame):
             conn.commit()
         print("Clocked Out", current_time)
 
+    # --- Lunch Break ---
     def lunch_break(self):
         top = tk.Toplevel(self)
         top.title("Lunch Break")
@@ -174,7 +182,8 @@ class EmployeeFrame(tk.Frame):
                 messagebox.showwarning("Warning", "You must be clocked in to log a lunch break.")
                 return
 
-            with sqlite3.connect("timeclock.db") as conn:
+            db_path = get_db_path()
+            with sqlite3.connect(db_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     "INSERT INTO lunch_breaks (time_log_id, duration_minutes, created_at) VALUES (?, ?, ?)",
@@ -189,14 +198,12 @@ class EmployeeFrame(tk.Frame):
         top.grab_set()
         top.focus_set()
 
-
-    # --- Open Add Time Log Modal ---
+    # --- Open Add Time Log ---
     def add_time_log(self):
         self.pack_forget()
         self.master.login_frame.clear_fields()
         self.master.login_frame.hide_menu()
         self.master.add_time_log.pack(fill="both", expand=True)
-
 
     # --- Logout ---
     def logout(self):

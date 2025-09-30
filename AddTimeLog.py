@@ -5,6 +5,7 @@ from tkcalendar import DateEntry
 from datetime import datetime, timedelta
 from tkinter import messagebox, filedialog
 from tkinter import ttk
+from utils import get_resource_path, get_db_path  # <-- central helper
 
 
 class AddTimeLog(tk.Frame):
@@ -16,10 +17,10 @@ class AddTimeLog(tk.Frame):
         self.add_start_time = None
         self.add_end_time = None
 
-
         # Image
         try:
-            self.img = tk.PhotoImage(file="resources/logo.png")
+            logo_path = get_resource_path("logo.png")
+            self.img = tk.PhotoImage(file=logo_path)
             self.img_small = self.img.subsample(2, 2)
             tk.Label(self, image=self.img_small).pack(pady=10)
         except Exception as e:
@@ -40,11 +41,11 @@ class AddTimeLog(tk.Frame):
 
         # Generate times from 6:30 AM to 7:30 PM in 15-minute increments
         times = []
-        for hour in range(6, 20):  # 6 to 19
+        for hour in range(6, 20):
             for minute in [0, 15, 30, 45]:
-                if hour == 6 and minute < 30:  # skip before 6:30
+                if hour == 6 and minute < 30:
                     continue
-                if hour == 19 and minute > 30:  # skip after 7:30 PM
+                if hour == 19 and minute > 30:
                     continue
                 times.append(f"{hour:02d}:{minute:02d}")
 
@@ -63,7 +64,17 @@ class AddTimeLog(tk.Frame):
         # Buttons Frame
         btn_frm = tk.Frame(self)
         btn_frm.pack(pady=10)
-        add_btn = tk.Button(btn_frm, text="Add Log", font=("Helvetica", 14), command=lambda: self.add_time_log(self.start_date.get_date().strftime("%Y-%m-%d"), self.start_time_combo.get(), self.end_time_combo.get(), 'Y'))
+        add_btn = tk.Button(
+            btn_frm,
+            text="Add Log",
+            font=("Helvetica", 14),
+            command=lambda: self.add_time_log(
+                self.start_date.get_date().strftime("%Y-%m-%d"),
+                self.start_time_combo.get(),
+                self.end_time_combo.get(),
+                "Y",
+            ),
+        )
         add_btn.grid(row=0, column=1, padx=10)
 
         back_btn = tk.Button(btn_frm, text="Back", font=("Helvetica", 14), command=self.back_page)
@@ -72,8 +83,6 @@ class AddTimeLog(tk.Frame):
         # Enter key binding
         self.start_time_combo.bind("<Return>", self.on_enter_key)
         self.end_time_combo.bind("<Return>", self.on_enter_key)
-
-
 
     def add_time_log(self, date, clock_in, clock_out, manual_override):
         # Parse the clock-in and clock-out times
@@ -84,38 +93,41 @@ class AddTimeLog(tk.Frame):
         if end <= start:
             messagebox.showerror("Invalid Time", "Clock-out time must be after clock-in time.")
             return
-        
-        # Validate date
+
         if datetime.now() > start:
             messagebox.showerror("Invalid Time", "Clock-in date cannot be in the past.")
             return
-        
+
         if datetime.now() + timedelta(days=7) < start:
             messagebox.showerror("Invalid Time", "Clock-in date cannot be more than 7 days in the future.")
             return
 
-        # Format times to ISO-like format with microseconds
         formatted_start = start.strftime("%Y-%m-%dT%H:%M:%S.%f")
         formatted_end = end.strftime("%Y-%m-%dT%H:%M:%S.%f")
 
-        # Store in database
-        with sqlite3.connect('timeclock.db') as conn:
+        # Store in database (from AppData)
+        db_path = get_db_path()
+        with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO time_logs(user_id, clock_in_time, clock_out_time, manual_override) VALUES(?, ?, ?, ?)",
-                (self.master.current_user_id, formatted_start, formatted_end, manual_override)
+                (self.master.current_user_id, formatted_start, formatted_end, manual_override),
             )
             conn.commit()
 
         print("Time log added:", formatted_start, formatted_end, manual_override)
         messagebox.showinfo("Success", "Time log added successfully.")
         self.start_date.set_date(datetime.now().date())
-        self.start_time_combo.set('')
-        self.end_time_combo.set('')
-
+        self.start_time_combo.set("")
+        self.end_time_combo.set("")
 
     def on_enter_key(self, event):
-        self.add_time_log(self.start_date.get_date().strftime("%Y-%m-%d"), self.start_time_combo.get(), self.end_time_combo.get(), 'Y')
+        self.add_time_log(
+            self.start_date.get_date().strftime("%Y-%m-%d"),
+            self.start_time_combo.get(),
+            self.end_time_combo.get(),
+            "Y",
+        )
 
     def back_page(self):
         self.pack_forget()

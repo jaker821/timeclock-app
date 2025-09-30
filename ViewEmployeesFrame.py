@@ -1,126 +1,103 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import sqlite3
 import bcrypt
-from tkinter import messagebox
+
+# Import the APPDATA-aware path utility
+from utils import get_db_path
+
 
 class ViewEmployeesFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
 
         # Title
-        tk.Label(self, text = "Employees", font=("Helvetica", 16, "bold")).pack(pady = 10)
+        tk.Label(self, text="Employees", font=("Helvetica", 16, "bold")).pack(pady=10)
 
-        # Tree View
+        # Treeview
         self.tree = ttk.Treeview(self, columns=("ID", "Username", "Role"), show='headings')
-        self.tree.heading("ID", text="ID")
-        self.tree.heading("Username", text="Username")
-        self.tree.heading("Role", text="Role")
-        self.tree.pack(fill = "both", expand = True)
+        for col in ("ID", "Username", "Role"):
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=100, anchor="center")
+        self.tree.pack(fill="both", expand=True)
 
         self.load_users()
 
         # Back Button
-        tk.Button(self, text = "Back", command = self.back_page).pack()
+        tk.Button(self, text="Back", command=self.back_page).pack(pady=5)
 
-        # Bind a double-click event to the Treeview widget
+        # Double-click event for editing
         self.tree.bind("<Double-1>", self.edit_user)
 
-
     def load_users(self):
-        # Clear existing data
+        """Reload the employee list from the DB."""
         for row in self.tree.get_children():
             self.tree.delete(row)
 
-        # Load users from DB
-        with sqlite3.connect('timeclock.db') as conn:
+        with sqlite3.connect(get_db_path()) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT id, username, role FROM users")
             rows = cursor.fetchall()
 
             for row in rows:
-                if not row[1] == "DEVELOPER_ADMIN":  # Exclude DEV user
+                if row[1] != "DEVELOPER_ADMIN":  # skip dev admin
                     self.tree.insert("", "end", values=row)
-                    continue
-
-            for col in ("ID", "Username", "Role"):
-                self.tree.column(col, width = 100, anchor = "center")
-                self.tree.heading(col, text = col.title())
-
-
 
     def edit_user(self, event):
-        # Get the selected item
+        """Open the edit user dialog for the selected user."""
         selected_item = self.tree.selection()
+        if not selected_item:
+            return
 
-        # Check if an item is selected
-        if selected_item:
-            # Get user details
-            item = self.tree.item(selected_item)
-            user_id, username, role = item['values']
+        user_id, username, role = self.tree.item(selected_item)['values']
 
-            # Open the edit user dialog
-            def edit_user_dialog(user_id, username):
-                # Create a new window for editing user
-                edit_user = tk.Toplevel(self)
-                edit_user.title("Edit User")
-                edit_user.geometry("300x250")
+        edit_user = tk.Toplevel(self)
+        edit_user.title(f"Edit User: {username}")
+        edit_user.geometry("300x250")
+        edit_user.grab_set()
+        edit_user.focus_set()
+        edit_user.transient(self)
 
-                # Delete User Functionality
-                tk.Label(edit_user, text = "Delete User", font=("Helvetica", 12)).pack(pady=10)
+        # --- Delete Section ---
+        tk.Label(edit_user, text="Delete User", font=("Helvetica", 12)).pack(pady=5)
 
+        def delete_user():
+            if messagebox.askyesno("Confirm Delete", f"Delete user {username}?"):
+                with sqlite3.connect(get_db_path()) as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+                    conn.commit()
+                messagebox.showinfo("User Deleted", f"{username} removed.")
+                edit_user.destroy()
+                self.load_users()
 
-                # Delete user functionality
-                def delete_user(user_id, username):
-                    if tk.messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete user {username}?"):
-                        with sqlite3.connect('timeclock.db') as conn:
-                            cursor = conn.cursor()
-                            cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
-                            conn.commit()
-                        tk.messagebox.showinfo("User Deleted", f"User {username} has been deleted.")
-                        edit_user.destroy()
-                        self.load_users()
+        tk.Button(edit_user, text=f"Delete {username}", fg="red", command=delete_user).pack(pady=5)
 
-                # Delete Button
-                tk.Button(edit_user, text = f"Delete User: {username}", fg="red", command = lambda: delete_user(user_id, username)).pack(pady=5)
+        # --- Update PIN Section ---
+        tk.Label(edit_user, text=f"Change PIN for {username}", font=("Helvetica", 12)).pack(pady=5)
+        tk.Label(edit_user, text="New PIN:").pack()
+        new_pin_entry = tk.Entry(edit_user, show="*")
+        new_pin_entry.pack(pady=5)
 
-                # Edit User PIN Functionality
-                tk.Label(edit_user, text=f"Edit PIN for Username: {username}", font=("Helvetica", 12)).pack(pady=10)
-                tk.Label(edit_user, text="New PIN:").pack(pady=5)
-                new_pin_entry = tk.Entry(edit_user, show="*")
-                new_pin_entry.pack(pady=5)
+        def save_new_pin():
+            new_pin = new_pin_entry.get()
+            if not new_pin:
+                messagebox.showerror("Error", "Enter a new PIN.")
+                return
+            hashed_pin = bcrypt.hashpw(new_pin.encode('utf-8'), bcrypt.gensalt())
+            with sqlite3.connect(get_db_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute("UPDATE users SET PIN = ? WHERE id = ?", (hashed_pin, user_id))
+                conn.commit()
+            messagebox.showinfo("Success", f"PIN updated for {username}.")
+            edit_user.destroy()
 
-                
-                # Save button functionality
-                def save_new_pin():
-                    # Get the new PIN
-                    new_pin = new_pin_entry.get()
+        tk.Button(edit_user, text="Save PIN", command=save_new_pin).pack(pady=10)
 
-                    # Validate and update the PIN in the database
-                    if new_pin:
-                        hashed_pin = bcrypt.hashpw(new_pin.encode('utf-8'), bcrypt.gensalt())
-                        with sqlite3.connect('timeclock.db') as conn:
-                            cursor = conn.cursor()
-                            cursor.execute("UPDATE users SET PIN = ? WHERE id = ?", (hashed_pin, user_id))
-                            conn.commit()
-                        tk.messagebox.showinfo("Success", f"PIN updated for user {username}.")
-                        edit_user.destroy()
-
-                    # Prompt user to enter a new PIN
-                    else:
-                        tk.messagebox.showerror("Error", "Please enter a new PIN.")
-
-                # Save Button
-                tk.Button(edit_user, text="Save", command=save_new_pin).pack(pady=10)
-                edit_user.mainloop()
-
-                
-
-            # Open the edit user dialog
-            edit_user_dialog(user_id, username)
-
+        # Block until closed
+        self.wait_window(edit_user)
 
     def back_page(self):
         self.master.current_window = "admin_frame"
         self.pack_forget()
-        self.master.admin_frame.pack(fill = "both", expand = True)
+        self.master.admin_frame.pack(fill="both", expand=True)

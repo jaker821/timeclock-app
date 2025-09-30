@@ -41,6 +41,10 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ## Changelog
 
+### v4.0 .exe packaging
+ - Added - File can now be packaged into a .exe file and shared.
+    - App creates a file in the users APPDATA folder with all the resources
+
 ### v3.1 Lunch breaks
  - Added - Employees can now log lunch breaks, automatically subtracts from total hours. And displays in audit table.
  - Updated help.md to reflect lunch break feature
@@ -144,6 +148,11 @@ pip install -r requirements.txt
 ```plaintext
 python timeclock.py
 ```
+
+### .exe package command
+'''
+pyinstaller --onefile --windowed --icon=resources/icon.ico --add-data "resources/logo.png;resources" timeclock.py
+'''
 
 
 ---
