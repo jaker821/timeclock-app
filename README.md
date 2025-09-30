@@ -31,15 +31,17 @@ A desktop based application used to track employees hours with a simple "clock i
 
 
 ## Upcoming Fixes
-
-1. Add enter key bindings to multiple frames
-2. Application packaged into a .exe file
    
 
 ---
 
 
 ## Changelog
+
+### v4.1 Message Box and Lunch time update
+ - Fixed - An issue where the pop ups for clock in and clock out where not working
+ - Fixed - Lunch break options needed to be expanded for up to an hour.
+ - Added - Auto log out for employee screen.
 
 ### v4.0 .exe packaging
  - Added - File can now be packaged into a .exe file and shared.
