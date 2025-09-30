@@ -31,9 +31,6 @@ A desktop based application used to track employees hours with a simple "clock i
 
 
 ## Upcoming Fixes
-
-1. Add enter key bindings to multiple frames
-2. Application packaged into a .exe file
    
 
 ---
