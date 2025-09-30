@@ -8,9 +8,10 @@ from utils import get_resource_path, get_db_path  # ✅ use helpers
 class EmployeeFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
+        self.AUTO_LOGOUT_MINUTES = 1  # Auto logout after 1.5 minutes of inactivity
         self.logout_timer = None
         self.reset_auto_logout()  # start timer
-        self.AUTO_LOGOUT_MINUTES = 5  # Auto logout after 5 minutes of inactivity
+        
 
         # Bind events to reset timer
         self.bind_all("<Any-KeyPress>", lambda e: self.reset_auto_logout())
@@ -219,6 +220,7 @@ class EmployeeFrame(tk.Frame):
     # --- Logout ---
     def logout(self):
         self.pack_forget()
+        self.logout_timer = None
         self.master.login_frame.clear_fields()
         self.master.login_frame.hide_menu()
         self.master.login_frame.pack(fill="both", expand=True)
