@@ -10,6 +10,8 @@ from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 import math
 import dateutil.parser as dp
 
+from utils import get_resource_path, get_db_path  # 👈 import helpers
+
 
 class ExportDataFrame(tk.Frame):
     def __init__(self, master):
@@ -20,9 +22,10 @@ class ExportDataFrame(tk.Frame):
         self.start_date = None
         self.end_date = None
 
-        # Image
+        # Image (loaded from AppData/resources)
         try:
-            self.img = tk.PhotoImage(file="resources/logo.png")
+            logo_path = get_resource_path("logo.png")  # 👈 uses helper
+            self.img = tk.PhotoImage(file=logo_path)
             self.img_small = self.img.subsample(2, 2)
             tk.Label(self, image=self.img_small).pack(pady=10)
         except Exception as e:
@@ -77,7 +80,8 @@ class ExportDataFrame(tk.Frame):
     def collect_time_logs(self, start_date, end_date):
         import dateutil.parser as dp
 
-        conn = sqlite3.connect("timeclock.db")
+        # ✅ use DB path from AppData
+        conn = sqlite3.connect(get_db_path())
         cursor = conn.cursor()
 
         # Get all employees
@@ -166,119 +170,121 @@ class ExportDataFrame(tk.Frame):
                         emp_totals[username]['regular'] += reg_hours
                         emp_totals[username]['overtime'] += ot_hours
 
+                        # --- NEW: mark OT shifts in audit_dict ---
+                        shifts_list = audit_dict[username].get(day, [])
+                        new_shifts = []
+                        for s, m, _ in shifts_list:
+                            new_shifts.append((s, m, ot_hours > 0))
+                        audit_dict[username][day] = new_shifts
+
                     cumulative_hours += hours
 
         conn.close()
         return audit_dict, emp_totals, date_range
 
-
-
     def export_to_excel(self, audit_dict, emp_totals, date_range):
-        """
-        Export the collected data to an Excel file.
+            """
+            Export the collected data to an Excel file.
 
-        Features:
-        - Sheet 1: Totals per employee (regular & OT hours)
-        - Sheet 2: Audit log (shifts per day)
-        - Highlight manual overrides (red) and OT shifts (orange)
-        - Auto-size columns and apply borders, freeze headers
-        """
-        file_destination = filedialog.asksaveasfilename(
-            defaultextension=".xlsx",
-            filetypes=[("Excel Files", "*.xlsx")],
-            title="Save Excel File",
-        )
-
-        if not file_destination:
-            return
-
-        try:
-            wb = Workbook()
-
-            # --- Sheet 1: Totals ---
-            ws_totals = wb.active
-            ws_totals.title = "Totals"
-            ws_totals.append(["Username", "Regular Hours", "Overtime Hours"])
-
-            for username in sorted(emp_totals.keys()):
-                totals = emp_totals[username]
-                ws_totals.append([
-                    username,
-                    round(totals['regular'], 2),
-                    round(totals['overtime'], 2)
-                ])
-
-            # --- Sheet 2: Audit Log ---
-            ws_audit = wb.create_sheet("Audit Log")
-
-            # Legend row
-            ws_audit.append(["Red = Manual Override / Adjusted | Orange = OT"])
-            ws_audit.row_dimensions[1].height = 20
-            ws_audit.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(date_range)+1)
-            legend_cell = ws_audit.cell(row=1, column=1)
-            legend_cell.font = Font(bold=True, color="9C0006")
-            legend_cell.alignment = Alignment(horizontal="center", vertical="center")
-
-            # Header row
-            header = ["Username"] + [d.strftime("%Y-%m-%d") for d in date_range]
-            ws_audit.append(header)
-
-            # Add user rows
-            for row_idx, username in enumerate(sorted(audit_dict.keys()), start=3):
-                ws_audit.cell(row=row_idx, column=1, value=username)
-                for col_idx, d in enumerate(date_range, start=2):
-                    shifts = audit_dict[username].get(d, [])
-                    cell_text = "; ".join([s for s, _, _ in shifts]) if shifts else ""
-                    cell = ws_audit.cell(row=row_idx, column=col_idx, value=cell_text)
-
-                    # Highlight manual override (red)
-                    if any(mo and str(mo).upper() == "Y" for _, mo, _ in shifts):
-                        cell.fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
-
-                    # Highlight OT shifts (orange)
-                    if any(is_ot for _, _, is_ot in shifts):
-                        cell.fill = PatternFill(start_color="FFD700", end_color="FFD700", fill_type="solid")
-
-            # --- Apply styling to all sheets ---
-            bold_font = Font(bold=True)
-            header_fill = PatternFill(start_color="FFD966", end_color="FFD966", fill_type="solid")
-            center_align = Alignment(horizontal="center", vertical="center")
-            thin_border = Border(
-                left=Side(style="thin"),
-                right=Side(style="thin"),
-                top=Side(style="thin"),
-                bottom=Side(style="thin"),
+            Features:
+            - Sheet 1: Totals per employee (regular & OT hours)
+            - Sheet 2: Audit log (shifts per day)
+            - Highlight manual overrides (red) and OT shifts (orange)
+            - Auto-size columns and apply borders, freeze headers
+            """
+            file_destination = filedialog.asksaveasfilename(
+                defaultextension=".xlsx",
+                filetypes=[("Excel Files", "*.xlsx")],
+                title="Save Excel File",
             )
 
-            for ws in [ws_totals, ws_audit]:
-                ws.freeze_panes = "B2"
+            if not file_destination:
+                return
 
-                # Style headers
-                for cell in ws[2] if ws == ws_audit else ws[1]:
-                    cell.font = bold_font
-                    cell.fill = header_fill
-                    cell.alignment = center_align
+            try:
+                wb = Workbook()
 
-                # Borders & column width
-                for col in ws.columns:
-                    col_letter = get_column_letter(col[0].column)
-                    max_length = max((len(str(cell.value)) for cell in col if cell.value), default=0)
-                    for cell in col:
-                        cell.border = thin_border
-                    ws.column_dimensions[col_letter].width = max(max_length + 2, 12)
+                # --- Sheet 1: Totals ---
+                ws_totals = wb.active
+                ws_totals.title = "Totals"
+                ws_totals.append(["Username", "Regular Hours", "Overtime Hours"])
 
-            wb.save(file_destination)
-            tk.messagebox.showinfo("Success", f"File saved successfully to:\n{file_destination}")
+                for username in sorted(emp_totals.keys()):
+                    totals = emp_totals[username]
+                    ws_totals.append([
+                        username,
+                        round(totals['regular'], 2),
+                        round(totals['overtime'], 2)
+                    ])
 
-        except Exception as e:
-            tk.messagebox.showerror("Error", f"Error saving file: {e}")
-            print(f"Error saving file: {e}")
+                # --- Sheet 2: Audit Log ---
+                ws_audit = wb.create_sheet("Audit Log")
 
+                # Legend row
+                ws_audit.append(["Red = Manual Override / Adjusted | Orange = OT"])
+                ws_audit.row_dimensions[1].height = 20
+                ws_audit.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(date_range)+1)
+                legend_cell = ws_audit.cell(row=1, column=1)
+                legend_cell.font = Font(bold=True, color="9C0006")
+                legend_cell.alignment = Alignment(horizontal="center", vertical="center")
 
+                # Header row
+                header = ["Username"] + [d.strftime("%Y-%m-%d") for d in date_range]
+                ws_audit.append(header)
+
+                # Add user rows
+                for row_idx, username in enumerate(sorted(audit_dict.keys()), start=3):
+                    ws_audit.cell(row=row_idx, column=1, value=username)
+                    for col_idx, d in enumerate(date_range, start=2):
+                        shifts = audit_dict[username].get(d, [])
+                        cell_text = "; ".join([s for s, _, _ in shifts]) if shifts else ""
+                        cell = ws_audit.cell(row=row_idx, column=col_idx, value=cell_text)
+
+                        # Highlight manual override (red)
+                        if any(mo and str(mo).upper() == "Y" for _, mo, _ in shifts):
+                            cell.fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+
+                        # Highlight OT shifts (orange)
+                        if any(is_ot for _, _, is_ot in shifts):
+                            cell.fill = PatternFill(start_color="FFD700", end_color="FFD700", fill_type="solid")
+
+                # --- Apply styling to all sheets ---
+                bold_font = Font(bold=True)
+                header_fill = PatternFill(start_color="FFD966", end_color="FFD966", fill_type="solid")
+                center_align = Alignment(horizontal="center", vertical="center")
+                thin_border = Border(
+                    left=Side(style="thin"),
+                    right=Side(style="thin"),
+                    top=Side(style="thin"),
+                    bottom=Side(style="thin"),
+                )
+
+                for ws in [ws_totals, ws_audit]:
+                    ws.freeze_panes = "B2"
+
+                    # Style headers
+                    for cell in ws[2] if ws == ws_audit else ws[1]:
+                        cell.font = bold_font
+                        cell.fill = header_fill
+                        cell.alignment = center_align
+
+                    # Borders & column width
+                    for col in ws.columns:
+                        col_letter = get_column_letter(col[0].column)
+                        max_length = max((len(str(cell.value)) for cell in col if cell.value), default=0)
+                        for cell in col:
+                            cell.border = thin_border
+                        ws.column_dimensions[col_letter].width = max(max_length + 2, 12)
+
+                wb.save(file_destination)
+                tk.messagebox.showinfo("Success", f"File saved successfully to:\n{file_destination}")
+
+            except Exception as e:
+                tk.messagebox.showerror("Error", f"Error saving file: {e}")
+                print(f"Error saving file: {e}")
 
     def on_enter_key(self, event):
         self.handle_export()
-
 
     def back_page(self):
         self.master.current_window = "admin_frame"

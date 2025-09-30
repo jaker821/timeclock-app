@@ -10,11 +10,11 @@ from AddTimeLog import AddTimeLog
 
 import sqlite3
 import bcrypt
-
 import shutil
 import os
 from datetime import datetime
 import glob
+from utils import get_resource_path, get_db_path  # <-- use helper functions
 
 class TimeClockApp(tk.Tk):
     def __init__(self):
@@ -53,7 +53,8 @@ class TimeClockApp(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.safe_quit)
 
     def initialize_database(self):
-        conn = sqlite3.connect("timeclock.db")
+        db_path = get_db_path()
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
         # Create tables if they don't exist
@@ -75,7 +76,6 @@ class TimeClockApp(tk.Tk):
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )
         """)
-
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS lunch_breaks(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -116,7 +116,7 @@ class TimeClockApp(tk.Tk):
                 messagebox.showerror("Missing PIN", "Please enter a PIN for the admin user.")
                 return
 
-            hashed_pin = bcrypt.hashpw(pin.encode('utf-8'), bcrypt.gensalt())
+            hashed_pin = bcrypt.hashpw(pin.encode("utf-8"), bcrypt.gensalt())
             cursor.execute(
                 "INSERT INTO users (username, PIN, role) VALUES (?, ?, ?)",
                 ("admin", hashed_pin, "admin")
@@ -128,16 +128,15 @@ class TimeClockApp(tk.Tk):
         tk.Button(top, text="Save", command=save_pin).pack(pady=20)
         self.wait_window(top)
 
-    
-    def cleanup_old_backups(self, backup_folder="backups", max_backups=500):
+    def cleanup_old_backups(self, backup_folder=None, max_backups=500):
+        if backup_folder is None:
+            backup_folder = get_resource_path("backups")
+
         backups = glob.glob(os.path.join(backup_folder, "*.db"))
         if len(backups) <= max_backups:
-            return  # nothing to delete
+            return
 
-        # Sort backups by creation time (oldest first)
-        backups.sort(key=os.path.getctime)
-
-        # Delete oldest files beyond the max allowed
+        backups.sort(key=os.path.getctime)  # oldest first
         for old_backup in backups[:-max_backups]:
             try:
                 os.remove(old_backup)
@@ -145,7 +144,12 @@ class TimeClockApp(tk.Tk):
             except Exception as e:
                 print(f"Failed to delete {old_backup}: {e}")
 
-    def backup_database(self, db_path="timeclock.db", backup_folder="backups"):
+    def backup_database(self, db_path=None, backup_folder=None):
+        if db_path is None:
+            db_path = get_db_path()
+        if backup_folder is None:
+            backup_folder = get_resource_path("backups")
+
         os.makedirs(backup_folder, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_file = os.path.join(backup_folder, f"time_tracker_backup_{timestamp}.db")
@@ -155,7 +159,6 @@ class TimeClockApp(tk.Tk):
             self.cleanup_old_backups(backup_folder, max_backups=500)
         except Exception as e:
             print(f"Error creating database backup: {e}")
-
 
     def safe_quit(self):
         if messagebox.askokcancel("Quit", "Are you sure you want to quit?"):
