@@ -150,9 +150,9 @@ python timeclock.py
 ```
 
 ### .exe package command
-'''
+```
 pyinstaller --onefile --windowed --icon=resources/icon.ico --add-data "resources/logo.png;resources" timeclock.py
-'''
+```
 
 
 ---
