@@ -27,6 +27,8 @@ class TimeClockApp(tk.Tk):
         self.current_username = None
         self.current_window = "login_frame"
 
+        self.protocol("WM_DELETE_WINDOW", self.safe_quit)
+
         # Initialize the database first
         try:
             self.conn, self.cursor = self.initialize_database()
@@ -50,7 +52,7 @@ class TimeClockApp(tk.Tk):
             messagebox.showerror("Frame Error", f"Error creating frames:\n{e}")
             self.destroy()
 
-        self.protocol("WM_DELETE_WINDOW", self.safe_quit)
+        
 
     def initialize_database(self):
         db_path = get_db_path()
