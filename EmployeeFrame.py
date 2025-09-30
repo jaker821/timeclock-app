@@ -121,45 +121,45 @@ class EmployeeFrame(tk.Frame):
         top.grab_set()
         top.focus_set()
 
-# --- Clock In ---
-def clock_in(self):
-    open_shift = self.get_open_shift()
-    if open_shift:
-        messagebox.showwarning("Warning", "You are already clocked in today!")
-        return
+    # --- Clock In ---
+    def clock_in(self):
+        open_shift = self.get_open_shift()
+        if open_shift:
+            messagebox.showwarning("Warning", "You are already clocked in today!")
+            return
 
-    current_time = datetime.now().strftime("%I:%M %p")
-    db_path = get_db_path()
-    with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO time_logs(user_id, clock_in_time, manual_override) VALUES(?, ?, ?)",
-            (self.master.current_user_id, datetime.now().isoformat(), "N")
-        )
-        conn.commit()
+        current_time = datetime.now().strftime("%I:%M %p")
+        db_path = get_db_path()
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO time_logs(user_id, clock_in_time, manual_override) VALUES(?, ?, ?)",
+                (self.master.current_user_id, datetime.now().isoformat(), "N")
+            )
+            conn.commit()
 
-    # --- POP-UP ---
-    messagebox.showinfo("Clocked In", f"You have successfully clocked in at {current_time}")
+        # --- POP-UP ---
+        messagebox.showinfo("Clocked In", f"You have successfully clocked in at {current_time}")
 
-# --- Clock Out ---
-def clock_out(self):
-    open_shift = self.get_open_shift()
-    if not open_shift:
-        messagebox.showwarning("Warning", "No active clock-in found.")
-        return
+    # --- Clock Out ---
+    def clock_out(self):
+        open_shift = self.get_open_shift()
+        if not open_shift:
+            messagebox.showwarning("Warning", "No active clock-in found.")
+            return
 
-    current_time = datetime.now().strftime("%I:%M %p")
-    db_path = get_db_path()
-    with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "UPDATE time_logs SET clock_out_time=?, manual_override=? WHERE id=?",
-            (datetime.now().isoformat(), "N", open_shift[0])
-        )
-        conn.commit()
+        current_time = datetime.now().strftime("%I:%M %p")
+        db_path = get_db_path()
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE time_logs SET clock_out_time=?, manual_override=? WHERE id=?",
+                (datetime.now().isoformat(), "N", open_shift[0])
+            )
+            conn.commit()
 
-    # --- POP-UP ---
-    messagebox.showinfo("Clocked Out", f"You have successfully clocked out at {current_time}")
+        # --- POP-UP ---
+        messagebox.showinfo("Clocked Out", f"You have successfully clocked out at {current_time}")
 
     # --- Lunch Break ---
     def lunch_break(self):
