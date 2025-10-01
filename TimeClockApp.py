@@ -19,7 +19,7 @@ from utils import get_resource_path, get_db_path  # <-- use helper functions
 class TimeClockApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Time Clock App")
+        self.title("Time Clock App v4.1.2")
         self.geometry("500x350")
         self.resizable(width=False, height=False)
 
