@@ -46,7 +46,7 @@ class EmployeeFrame(tk.Frame):
         # Lunch Break
         tk.Button(btn_frm, text="Lunch Break", font=("Helvetica", 14), command=self.lunch_break).grid(row=0, column=2, padx=5, pady=5)
 
-        tk.Button(btn_frm, text="Add Time Log", font=("Helvetica", 12), command=self.add_time_log).grid(pady=10, row=2, column=0, columnspan=3)
+        tk.Button(btn_frm, text="Add Future/Past Time", font=("Helvetica", 12), command=self.add_time_log).grid(pady=10, row=2, column=0, columnspan=3)
         tk.Button(btn_frm, text="Logout", font=("Helvetica", 10), command=self.logout).grid(pady=10, row=3, column=0, columnspan=3)
 
     # --- Clock Update ---

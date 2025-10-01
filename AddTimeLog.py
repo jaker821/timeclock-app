@@ -94,8 +94,8 @@ class AddTimeLog(tk.Frame):
             messagebox.showerror("Invalid Time", "Clock-out time must be after clock-in time.")
             return
 
-        if datetime.now() > start:
-            messagebox.showerror("Invalid Time", "Clock-in date cannot be in the past.")
+        if datetime.now() - timedelta(days=7) > start:
+            messagebox.showerror("Invalid Time", "Clock-in date cannot be more than 7 days in the past.")
             return
 
         if datetime.now() + timedelta(days=7) < start:
