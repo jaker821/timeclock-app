@@ -8,7 +8,7 @@ from utils import get_resource_path, get_db_path  # ✅ use helpers
 class EmployeeFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
-        self.AUTO_LOGOUT_MINUTES = 1  # Auto logout after 1.5 minutes of inactivity
+        self.AUTO_LOGOUT_MINUTES = 1  # Auto logout after 1 minute of inactivity
         self.logout_timer = None
         self.reset_auto_logout()  # start timer
         
@@ -16,7 +16,6 @@ class EmployeeFrame(tk.Frame):
         # Bind events to reset timer
         self.bind_all("<Any-KeyPress>", lambda e: self.reset_auto_logout())
         self.bind_all("<Any-Button>", lambda e: self.reset_auto_logout())
-        self.bind_all("<Motion>", lambda e: self.reset_auto_logout())
 
         # Image (load from AppData/resources)
         try:
@@ -220,7 +219,11 @@ class EmployeeFrame(tk.Frame):
     # --- Logout ---
     def logout(self):
         self.pack_forget()
+        if self.logout_timer:
+            self.after_cancel(self.logout_timer)
         self.logout_timer = None
+        self.unbind_all("<Any-KeyPress>")
+        self.unbind_all("<Any-Button>")
         self.master.login_frame.clear_fields()
         self.master.login_frame.hide_menu()
         self.master.login_frame.pack(fill="both", expand=True)

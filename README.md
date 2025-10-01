@@ -38,6 +38,9 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ## Changelog
 
+### v4.1.1 Bug Fixes
+ - Fixed - An issue where the auto log out was being triggered too early.
+
 ### v4.1 Message Box and Lunch time update
  - Fixed - An issue where the pop ups for clock in and clock out where not working
  - Fixed - Lunch break options needed to be expanded for up to an hour.
