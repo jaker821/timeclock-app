@@ -38,6 +38,10 @@ A desktop based application used to track employees hours with a simple "clock i
 
 ## Changelog
 
+### v4.2.1 Bug Fixes and Missing Clock Out
+ - FIXED - An issue where the user could log a 24 hour shift.
+ - Updated - Adding future time logs for every 5 minutes.
+
 ### v4.1.1 Bug Fixes
  - Fixed - An issue where the auto log out was being triggered too early.
 

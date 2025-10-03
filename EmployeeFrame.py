@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from datetime import datetime
+from datetime import datetime, timedelta
 import sqlite3
 from utils import get_resource_path, get_db_path  # ✅ use helpers
 
@@ -11,7 +11,6 @@ class EmployeeFrame(tk.Frame):
         self.AUTO_LOGOUT_MINUTES = 1  # Auto logout after 1 minute of inactivity
         self.logout_timer = None
         self.reset_auto_logout()  # start timer
-        
 
         # Bind events to reset timer
         self.bind_all("<Any-KeyPress>", lambda e: self.reset_auto_logout())
@@ -25,7 +24,7 @@ class EmployeeFrame(tk.Frame):
             tk.Label(self, image=self.img_small).pack(pady=10)
         except Exception as e:
             tk.Label(self, text="Image not found").pack(pady=10)
-            print(f"Error loading logo: {e}")  
+            print(f"Error loading logo: {e}")
 
         # Clock
         self.clock_label = tk.Label(self, font=("Helvetica", 20, "italic"))
@@ -40,14 +39,27 @@ class EmployeeFrame(tk.Frame):
         btn_frm.pack(pady=5)
 
         # Buttons
-        tk.Button(btn_frm, text="Clock In", font=("Helvetica", 14), command=self.clock_in).grid(pady=5, padx=5, row=0, column=0, sticky="w")
-        tk.Button(btn_frm, text="Clock Out", font=("Helvetica", 14), command=self.clock_out).grid(pady=5, padx=5, row=0, column=1, sticky="e")
+        tk.Button(
+            btn_frm, text="Clock In", font=("Helvetica", 14), command=self.clock_in
+        ).grid(pady=5, padx=5, row=0, column=0, sticky="w")
+        tk.Button(
+            btn_frm, text="Clock Out", font=("Helvetica", 14), command=self.clock_out
+        ).grid(pady=5, padx=5, row=0, column=1, sticky="e")
 
         # Lunch Break
-        tk.Button(btn_frm, text="Lunch Break", font=("Helvetica", 14), command=self.lunch_break).grid(row=0, column=2, padx=5, pady=5)
+        tk.Button(
+            btn_frm, text="Lunch Break", font=("Helvetica", 14), command=self.lunch_break
+        ).grid(row=0, column=2, padx=5, pady=5)
 
-        tk.Button(btn_frm, text="Add Future/Past Time", font=("Helvetica", 12), command=self.add_time_log).grid(pady=10, row=2, column=0, columnspan=3)
-        tk.Button(btn_frm, text="Logout", font=("Helvetica", 10), command=self.logout).grid(pady=10, row=3, column=0, columnspan=3)
+        tk.Button(
+            btn_frm,
+            text="Add Future/Past Time",
+            font=("Helvetica", 12),
+            command=self.add_time_log,
+        ).grid(pady=10, row=2, column=0, columnspan=3)
+        tk.Button(
+            btn_frm, text="Logout", font=("Helvetica", 10), command=self.logout
+        ).grid(pady=10, row=3, column=0, columnspan=3)
 
     # --- Clock Update ---
     def update_clock(self):
@@ -60,22 +72,53 @@ class EmployeeFrame(tk.Frame):
         db_path = get_db_path()  # ✅ use AppData DB
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT id, clock_in_time 
                 FROM time_logs 
                 WHERE user_id = ? AND clock_out_time IS NULL 
                 ORDER BY clock_in_time DESC LIMIT 1
-            """, (self.master.current_user_id,))
+            """,
+                (self.master.current_user_id,),
+            )
             return cursor.fetchone()
 
+    def get_all_open_shifts(self):
+        """Return all open shifts (last 7 days only)."""
+        db_path = get_db_path()
+        one_week_ago = datetime.now() - timedelta(days=7)
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT id, clock_in_time 
+                FROM time_logs 
+                WHERE user_id = ?
+                  AND clock_out_time IS NULL
+                  AND clock_in_time >= ?
+                ORDER BY clock_in_time ASC
+            """,
+                (self.master.current_user_id, one_week_ago.isoformat()),
+            )
+            return cursor.fetchall()
+
     # --- Prompt Missing Clock Out ---
-    def prompt_missing_clock_out(self, shift_id, clock_in_time):
+    def prompt_missing_clock_out(
+        self, shift_id, clock_in_time, on_close=None, count=None, total=None
+    ):
         top = tk.Toplevel(self)
         top.title("Missing Clock Out")
-        top.geometry("350x200")
+        top.geometry("350x220")
         top.resizable(width=False, height=False)
 
-        tk.Label(top, text=f"You forgot to clock out for {clock_in_time[:10]}").pack(pady=5)
+        if count and total:
+            tk.Label(
+                top, text=f"Missing Shift {count} of {total}", font=("Helvetica", 12, "bold")
+            ).pack(pady=5)
+
+        tk.Label(top, text=f"You forgot to clock out for {clock_in_time[:10]}").pack(
+            pady=5
+        )
         tk.Label(top, text="Select Clock Out Time").pack(pady=5)
 
         hours = [f"{i:02}" for i in range(24)]
@@ -87,20 +130,28 @@ class EmployeeFrame(tk.Frame):
         cb_frame = tk.Frame(top)
         cb_frame.pack(pady=10)
 
-        hour_cb = ttk.Combobox(cb_frame, width=3, values=hours, textvariable=hour_var, state="readonly")
+        hour_cb = ttk.Combobox(
+            cb_frame, width=3, values=hours, textvariable=hour_var, state="readonly"
+        )
         hour_cb.grid(row=0, column=0, padx=5)
-        minute_cb = ttk.Combobox(cb_frame, width=3, values=minutes, textvariable=minute_var, state="readonly")
+        minute_cb = ttk.Combobox(
+            cb_frame, width=3, values=minutes, textvariable=minute_var, state="readonly"
+        )
         minute_cb.grid(row=0, column=1, padx=5)
 
         def save_clock_out():
             try:
                 h = int(hour_var.get())
                 m = int(minute_var.get())
-                clock_in_dt = datetime.strptime(clock_in_time, "%Y-%m-%dT%H:%M:%S.%f")
+                clock_in_dt = datetime.strptime(
+                    clock_in_time, "%Y-%m-%dT%H:%M:%S.%f"
+                )
                 clock_out_dt = clock_in_dt.replace(hour=h, minute=m)
 
                 if clock_out_dt <= clock_in_dt:
-                    messagebox.showerror("Invalid Time", "Clock out must be after clock in.")
+                    messagebox.showerror(
+                        "Invalid Time", "Clock out must be after clock in."
+                    )
                     return
 
                 db_path = get_db_path()
@@ -108,38 +159,57 @@ class EmployeeFrame(tk.Frame):
                     cursor = conn.cursor()
                     cursor.execute(
                         "UPDATE time_logs SET clock_out_time=?, manual_override=? WHERE id=?",
-                        (clock_out_dt.isoformat(), "Y", shift_id)
+                        (clock_out_dt.isoformat(), "Y", shift_id),
                     )
                     conn.commit()
 
-                messagebox.showinfo("Success", "Previous shift updated. You can now clock in/out.")
+                messagebox.showinfo("Success", "Previous shift updated.")
                 top.destroy()
+                if on_close:
+                    on_close()
             except Exception as e:
                 messagebox.showerror("Error", f"Invalid input: {e}")
 
-        tk.Button(top, text="Save", command=save_clock_out).pack(pady=5)
+        tk.Button(top, text="Save", command=save_clock_out).pack(pady=10)
 
         top.grab_set()
         top.focus_set()
 
+    def check_and_prompt_open_shifts(self):
+        open_shifts = self.get_all_open_shifts()
+        self._prompt_next_shift(open_shifts)
+
+    def _prompt_next_shift(self, shifts, index=0):
+        if index >= len(shifts):
+            return  #  done
+        shift_id, clock_in_time = shifts[index]
+
+        def on_close():
+            self._prompt_next_shift(shifts, index + 1)
+
+        self.prompt_missing_clock_out(
+            shift_id, clock_in_time, on_close, index + 1, len(shifts)
+        )
+
     # --- Clock In ---
     def clock_in(self):
-        open_shift = self.get_open_shift()
-        if open_shift:
-            messagebox.showwarning("Warning", "You are already clocked in today!")
-            return
+        # 🔎 First check for unresolved shifts in the past week
+        open_shifts = self.get_all_open_shifts()
+        if open_shifts:
+            self.check_and_prompt_open_shifts()
+            return  # ⛔ stop until they fix old shifts
 
+        # ✅ If no old shifts, proceed to normal clock-in
         current_time = datetime.now().strftime("%I:%M %p")
         db_path = get_db_path()
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO time_logs(user_id, clock_in_time, manual_override) VALUES(?, ?, ?)",
-                (self.master.current_user_id, datetime.now().isoformat(), "N")
+                (self.master.current_user_id, datetime.now().isoformat(), "N"),
             )
             conn.commit()
 
-        # --- POP-UP ---
         messagebox.showinfo("Clocked In", f"You have successfully clocked in at {current_time}")
 
     # --- Clock Out ---
@@ -149,18 +219,33 @@ class EmployeeFrame(tk.Frame):
             messagebox.showwarning("Warning", "No active clock-in found.")
             return
 
-        current_time = datetime.now().strftime("%I:%M %p")
+        shift_id, clock_in_time = open_shift
+        clock_in_dt = datetime.fromisoformat(clock_in_time)
+        now = datetime.now()
+
+        # Prevent 24+ hour shifts
+        max_shift_hours = 16  # adjust as needed
+        if (now - clock_in_dt).total_seconds() > max_shift_hours * 3600:
+            messagebox.showerror(
+                "Too Long",
+                "This shift is too long to auto clock out.\n"
+                "Please correct it using the Missing Clock Out prompt."
+            )
+            self.prompt_missing_clock_out(shift_id, clock_in_time)
+            return
+
+        # Normal clock out
         db_path = get_db_path()
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "UPDATE time_logs SET clock_out_time=?, manual_override=? WHERE id=?",
-                (datetime.now().isoformat(), "N", open_shift[0])
+                (now.isoformat(), "N", shift_id)
             )
             conn.commit()
 
-        # --- POP-UP ---
-        messagebox.showinfo("Clocked Out", f"You have successfully clocked out at {current_time}")
+        messagebox.showinfo("Clocked Out", f"You have successfully clocked out at {now.strftime('%I:%M %p')}")
+
 
     # --- Lunch Break ---
     def lunch_break(self):
@@ -174,14 +259,18 @@ class EmployeeFrame(tk.Frame):
         options = ["10", "15", "20", "25", "30", "45", "60"]
         duration_var = tk.StringVar(value=options[0])
 
-        combo = ttk.Combobox(top, values=options, textvariable=duration_var, state="readonly")
+        combo = ttk.Combobox(
+            top, values=options, textvariable=duration_var, state="readonly"
+        )
         combo.pack(pady=5)
 
         def save_lunch_break():
             minutes = int(duration_var.get())
             open_shift = self.get_open_shift()
             if not open_shift:
-                messagebox.showwarning("Warning", "You must be clocked in to log a lunch break.")
+                messagebox.showwarning(
+                    "Warning", "You must be clocked in to log a lunch break."
+                )
                 return
 
             db_path = get_db_path()
@@ -189,21 +278,26 @@ class EmployeeFrame(tk.Frame):
                 cursor = conn.cursor()
                 cursor.execute(
                     "INSERT INTO lunch_breaks (time_log_id, duration_minutes, created_at) VALUES (?, ?, ?)",
-                    (open_shift[0], minutes, datetime.now().isoformat())
+                    (open_shift[0], minutes, datetime.now().isoformat()),
                 )
                 conn.commit()
 
-            messagebox.showinfo("Success", f"Lunch break of {minutes} minutes recorded.")
+            messagebox.showinfo(
+                "Success", f"Lunch break of {minutes} minutes recorded."
+            )
             top.destroy()
 
         tk.Button(top, text="Save", command=save_lunch_break).pack(pady=10)
         top.grab_set()
         top.focus_set()
 
+    # --- Auto Logout ---
     def reset_auto_logout(self):
         if self.logout_timer:
             self.after_cancel(self.logout_timer)
-        self.logout_timer = self.after(self.AUTO_LOGOUT_MINUTES * 60 * 1000, self.auto_logout)
+        self.logout_timer = self.after(
+            self.AUTO_LOGOUT_MINUTES * 60 * 1000, self.auto_logout
+        )
 
     def auto_logout(self):
         tk.messagebox.showinfo("Auto Logout", "You have been logged out due to inactivity.")

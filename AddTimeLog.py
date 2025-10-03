@@ -39,10 +39,10 @@ class AddTimeLog(tk.Frame):
         )
         self.start_date.grid(row=1, column=0, padx=10, pady=5)
 
-        # Generate times from 6:30 AM to 7:30 PM in 15-minute increments
+        # Generate times from 6:30 AM to 7:30 PM in 5-minute increments
         times = []
         for hour in range(6, 20):
-            for minute in [0, 15, 30, 45]:
+            for minute in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]:
                 if hour == 6 and minute < 30:
                     continue
                 if hour == 19 and minute > 30:
